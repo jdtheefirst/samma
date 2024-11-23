@@ -1,12 +1,11 @@
-# Dockerfile.janus using a lighter base image
+# Use a lighter Debian base image
 FROM debian:bullseye-slim
 
-# Set non-interactive mode to avoid prompts
+# Set non-interactive mode to avoid prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install essential dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Install only necessary dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-utils \
     build-essential \
     libmicrohttpd-dev \
@@ -26,7 +25,6 @@ RUN apt-get update && \
     automake \
     git \
     wget \
-    ffmpeg \
     tzdata \
     ca-certificates \
     libnice-dev \
@@ -38,7 +36,7 @@ RUN apt-get update && \
     gstreamer1.0-plugins-bad && \
     rm -rf /var/lib/apt/lists/*
 
-# Set timezone
+# Set timezone to avoid prompts
 RUN ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
@@ -57,20 +55,18 @@ RUN git clone --depth 1 https://github.com/jdtheefirst/janus-gateway.git /opt/ja
     cd /opt/janus-gateway && \
     sh autogen.sh && \
     ./configure --enable-websockets --enable-data-channels --disable-rabbitmq --disable-mqtt --disable-docs && \
-    make && \
-    make install && \
-    make configs
+    make && make install && make configs
 
-# Copy custom plugin if needed
+# Optional: Add RTMP plugin if needed
 RUN cp /opt/janus-gateway/src/plugins/libjanus_rtmp.so /usr/local/lib/janus/plugins/ && \
     cp /opt/janus-gateway/conf/janus.plugin.rtmp.cfg.sample /usr/local/etc/janus/
 
-# Copy the SSL certificates from host to the container
+# Copy SSL certificates
 COPY fullchain.pem /usr/local/etc/certificates/fullchain.pem
 COPY privkey.pem /usr/local/etc/certificates/privkey.pem
 
 # Expose necessary ports
 EXPOSE 8088 8089 8188 8189
 
-# Start Janus
+# Start Janus Gateway
 CMD ["janus", "-F", "/usr/local/etc/janus"]
