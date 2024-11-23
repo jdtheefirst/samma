@@ -1,0 +1,26 @@
+FROM node:20-slim
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy only the backend-specific package.json files from the backend folder
+COPY package*.json ./
+
+# Install backend dependencies
+RUN npm install
+
+# Set environment variables
+ENV NPM_CONFIG_TIMEOUT=600000
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
+# Install a stable version of npm (e.g., 9.x.x)
+RUN npm install -g npm@9.8.1 --cache /tmp/empty-cache --prefer-offline
+
+# Copy the entire source directory
+COPY . .
+
+# Create a volume for uploads
+VOLUME ["/usr/src/app/uploads"]
+
+# Expose port 8080 for the backend (express server)
+EXPOSE 8080

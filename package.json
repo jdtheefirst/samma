@@ -1,0 +1,39 @@
+{
+  "name": "world",
+  "version": "1.0.0",
+  "description": "world-samma",
+  "main": "backend/index.js",
+  "scripts": {
+    "start": "node backend/index.js",
+    "dev": "nodemon backend/index.js",
+    "frontend": "cd frontend && npm install && npm start",
+    "backend": "cd backend && npm install && nodemon index.js",
+    "build": "cd frontend && npm install && npm run build"
+  },
+  "heroku-run-build-script": true,
+  "author": "jdtheefirst",
+  "license": "ISC",
+  "dependencies": {
+    "@vitalets/google-translate-api": "^9.2.0",
+    "@xmldom/xmldom": "^0.8.10",
+    "axios": "^1.6.4",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cloudinary": "^2.5.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "express-rate-limit": "^7.1.5",
+    "janus-gateway": "^1.2.4",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
+    "nodemailer": "^6.9.8",
+    "nodemon": "^3.0.2",
+    "path": "^0.12.7",
+    "punycode": "^2.3.1",
+    "socket.io": "^4.7.4"
+  },
+  "resolutions": {
+    "punycode": "^2.0.0"
+  }
+}

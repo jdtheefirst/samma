@@ -1,0 +1,20 @@
+FROM tiangolo/nginx-rtmp
+
+# Create nginx user and group
+RUN addgroup --system nginx && adduser --system --ingroup nginx nginx
+
+# Create directories for RTMP streams and SSL certificates, and set appropriate permissions
+RUN mkdir -p /opt/data/hls /etc/nginx/certificates && chown -R nginx:nginx /opt/data/hls /etc/nginx/certificates
+
+# Copy SSL certificates
+COPY fullchain.pem /etc/nginx/certificates/fullchain.pem
+COPY privkey.pem /etc/nginx/certificates/privkey.pem
+
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose necessary ports
+EXPOSE 80 443 1935
+
+# Start Nginx
+CMD ["nginx"]

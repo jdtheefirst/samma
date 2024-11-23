@@ -1,0 +1,14 @@
+# Frontend using the official Nginx image to serve the static site
+FROM nginx:alpine
+
+# Set the working directory for Nginx to serve the app
+WORKDIR /usr/share/nginx/html
+
+# Copy the pre-built React app from the frontend/build directory to the Nginx container
+COPY frontend/build /usr/share/nginx/html
+
+# Expose port 80 to allow external access to the app
+EXPOSE 80
+
+# Start Nginx to serve the app
+CMD ["nginx"]
