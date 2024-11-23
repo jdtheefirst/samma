@@ -1,0 +1,73 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "proxy": "http://localhost:8080",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@chakra-ui/avatar": "^2.3.0",
+    "@chakra-ui/button": "^2.1.0",
+    "@chakra-ui/form-control": "^2.2.0",
+    "@chakra-ui/hooks": "^2.2.1",
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/input": "^2.1.2",
+    "@chakra-ui/layout": "^2.3.1",
+    "@chakra-ui/menu": "^2.2.1",
+    "@chakra-ui/modal": "^2.3.1",
+    "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/toast": "^7.0.2",
+    "@paypal/react-paypal-js": "^8.2.0",
+    "@radix-ui/react-alert-dialog": "^1.1.2",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@react-oauth/google": "^0.12.1",
+    "@react-spring/web": "^9.7.5",
+    "@shadcn/ui": "^0.0.4",
+    "@styled-icons/boxicons-regular": "^10.47.0",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "axios": "^1.6.8",
+    "bcryptjs": "^2.4.3",
+    "class-variance-authority": "^0.7.0",
+    "countries-list": "^3.0.6",
+    "janus-gateway-js": "^2.0.2",
+    "process": "^0.11.10",
+    "react": "^18.2.0",
+    "react-country-flag": "^3.1.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1",
+    "react-router-dom": "^6.22.0",
+    "react-scripts": "^5.0.1",
+    "socket.io-client": "^4.7.4",
+    "styled-components": "^6.1.8",
+    "tailwindcss": "^3.4.14",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^4.9.5",
+    "video.js": "^8.19.1",
+    "web-vitals": "^3.5.2",
+    "webrtc-adapter": "^9.0.1",
+    "zod": "^3.23.8"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "ie 11"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

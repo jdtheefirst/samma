@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.App {
+  text-align: center;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column; /* Ensure it stacks vertically */
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Changed from fixed to relative */
+  top: 0;
+  left: 0;
+  background-position: center;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.sideDrawer {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.rocket-animation {
+  animation: fly 1s ease-in-out infinite alternate;
+  color: aliceblue;
+  bottom: 0;
+}
+
+@keyframes fly {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes slideInFromTop {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://worldsamma.org/sitemap.xml
