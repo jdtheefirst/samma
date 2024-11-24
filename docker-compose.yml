@@ -33,3 +33,5 @@ services:
       - janus
     volumes:
       - ./frontend/build:/usr/share/nginx/html:ro
+    env_file:
+      - ./frontend/env
