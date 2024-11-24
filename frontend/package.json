@@ -39,7 +39,7 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "countries-list": "^3.0.6",
-    "janus-gateway-js": "^2.0.2",
+    "janus-gateway": "^1.2.4",
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-country-flag": "^3.1.0",
