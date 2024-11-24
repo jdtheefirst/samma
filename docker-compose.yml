@@ -36,5 +36,3 @@ services:
     environment:
       - REACT_APP_ADMIN_PASSKEY=165432
       - REACT_APP_API_KEY=AIzaSyDroS6O_Co4FGHTourOkHfAIpGEW_xq6XY
-    env_file:
-      - ./frontend/env
