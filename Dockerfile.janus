@@ -39,7 +39,7 @@ RUN ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Clone and build Janus Gateway
-RUN git clone --depth 1 --branch v0.12.2 https://github.com/meetecho/janus-gateway.git /opt/janus-gateway && \
+RUN git clone --depth 1 https://github.com/meetecho/janus-gateway.git /opt/janus-gateway && \
     cd /opt/janus-gateway && \
     sh autogen.sh && \
     ./configure --enable-websockets --enable-data-channels --disable-rabbitmq --disable-mqtt --disable-docs CFLAGS="-Wno-error" && \
