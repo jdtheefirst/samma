@@ -20,15 +20,6 @@ services:
       - janus
     command: node backend/index.js
 
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-
   nginx:
     build:
       context: .
@@ -38,7 +29,6 @@ services:
       - "443:443"
       - "1935:1935"
     depends_on:
-      - frontend
       - backend
       - janus
     volumes:
