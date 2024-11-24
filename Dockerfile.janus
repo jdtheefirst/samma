@@ -38,21 +38,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN ln -snf /usr/share/zoneinfo/Europe/London /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
-# Install libusrsctp
-RUN git clone https://github.com/sctplab/usrsctp.git /opt/usrsctp && \
-    cd /opt/usrsctp && \
-    git checkout 0.9.5.0 && \
-    ./bootstrap && \
-    ./configure && \
-    make && make install && \
-    ldconfig && \
-    cd .. && rm -rf /opt/usrsctp
-
 # Clone and build Janus Gateway
 RUN git clone --depth 1 https://github.com/meetecho/janus-gateway.git /opt/janus-gateway && \
     cd /opt/janus-gateway && \
     sh autogen.sh && \
-    ./configure --enable-websockets --enable-data-channels --disable-rabbitmq --disable-mqtt --disable-docs CFLAGS="-Wno-error" && \
+    ./configure --enable-websockets --disable-data-channels --disable-rabbitmq --disable-mqtt --disable-docs CFLAGS="-Wno-error" && \
     make -j$(nproc) V=1 && \
     make install && make configs && \
     rm -rf /opt/janus-gateway
