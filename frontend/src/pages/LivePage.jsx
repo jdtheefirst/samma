@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
-// import Janus from "janus-gateway-js";
 import "../App.css";
 import "webrtc-adapter";
 import StatusIndicator from "../components/Status";
@@ -36,11 +35,12 @@ const JanusRtmpStreamer = () => {
           console.warn("Camera or microphone permissions are not granted.");
           // Optionally show a UI prompt here to notify the user
         } else {
+          alert("Please allow camera and microphone access to stream.");
           console.log("Permissions granted for camera and microphone.");
         }
 
         // Initialize Janus
-        initializeJanus();
+        initializeJanusForPublishing();
       } catch (error) {
         console.error(
           "Error initializing Janus or checking permissions:",
@@ -57,41 +57,55 @@ const JanusRtmpStreamer = () => {
     };
   }, []);
 
-  const initializeJanus = () => {
+  const initializeJanusForPublishing = () => {
     Janus.init({
       debug: "all",
       callback: () => {
         const janus = new Janus({
           server: "wss://test.worldsamma.org/ws/",
           success: () => {
-            console.log("Janus Gateway initialized!");
-            attachPlugin(janus);
+            setConnected(true);
+            janus.attach({
+              plugin: "janus.plugin.streaming",
+              success: (pluginHandle) => {
+                setRtmpPlugin(pluginHandle);
+                createStream(pluginHandle);
+              },
+              error: (err) => {
+                console.error("Error attaching plugin:", err);
+              },
+            });
           },
           error: (err) => {
             console.error("Error initializing Janus Gateway:", err);
           },
         });
-        janusRef.current = janus;
       },
     });
   };
 
-  const attachPlugin = (janus) => {
-    janus.attach({
-      plugin: "janus.plugin.streaming",
-      success: (plugin) => {
-        console.log("Streaming plugin attached!", plugin);
-        setRtmpPlugin(plugin);
-        setConnected(true);
-        attachStream(plugin);
+  const createStream = (plugin) => {
+    const janusRoomId = 1234; // Assign a unique ID for the stream room.
+    plugin.send({
+      message: {
+        request: "create",
+        type: "live",
+        id: janusRoomId,
+        description: "My Live Stream",
+        audio: true,
+        video: true,
+      },
+      success: () => {
+        console.log("Stream room created with ID:", janusRoomId);
+        attachLocalStream(plugin, janusRoomId);
       },
       error: (err) => {
-        console.error("Error attaching plugin:", err);
+        console.error("Error creating stream room:", err);
       },
     });
   };
 
-  const attachStream = async (plugin) => {
+  const attachLocalStream = async (plugin, janusRoomId) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -104,44 +118,45 @@ const JanusRtmpStreamer = () => {
         media: { video: true, audio: true },
         stream,
         success: (jsep) => {
-          console.log("Generated JSEP:", jsep);
           plugin.send({
-            message: { request: "configure", audio: true, video: true },
+            message: {
+              request: "publish",
+              id: janusRoomId,
+            },
             jsep,
           });
+          console.log("Publishing stream to room:", janusRoomId);
         },
-        error: (error) => {
-          alert("An error occurred while creating the WebRTC offer.");
-          console.error("Error creating WebRTC offer:", error);
+        error: (err) => {
+          console.error("Error creating WebRTC offer:", err);
         },
       });
-    } catch (error) {
-      console.error("Error accessing user media:", error);
+    } catch (err) {
+      console.error("Error accessing user media:", err);
     }
   };
 
   const startStreaming = () => {
-    if (!rtmpPlugin) {
+    if (rtmpPlugin) {
+      rtmpPlugin.send({
+        message: { request: "publish" },
+        success: () => {
+          console.log("Streaming started successfully!");
+          setStreaming(true);
+        },
+        error: (err) => {
+          console.error("Error starting stream:", err);
+        },
+      });
+    } else {
       console.error("RTMP plugin not attached.");
-      return;
     }
-    const rtmpUrl = "rtmps://test.worldsamma.org/rtmp/";
-
-    rtmpPlugin.send({
-      message: { request: "publish", rtmp_url: rtmpUrl },
-      success: () => {
-        console.log("Publishing to RTMP successfully!");
-        setStreaming(true);
-      },
-      error: (err) => {
-        console.error("Error publishing to RTMP:", err);
-      },
-    });
   };
 
   const stopStreaming = () => {
     if (rtmpPlugin) {
       rtmpPlugin.hangup();
+      setConnected(false);
       setStreaming(false);
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -153,6 +168,8 @@ const JanusRtmpStreamer = () => {
     if (janusRef.current) {
       janusRef.current.destroy();
       console.log("Janus destroyed successfully");
+      setConnected(false);
+      setStreaming(false);
     }
     if (rtmpPlugin) {
       rtmpPlugin.detach(); // Detach the plugin

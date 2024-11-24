@@ -1,19 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
-import videojs from "video.js";
 import "video.js/dist/video-js.css";
-import { Box, Heading, Text, Spinner, Stack } from "@chakra-ui/react";
+import { Box, Heading, Text, Spinner, Stack, Image } from "@chakra-ui/react";
 import UpperNav from "../miscellenious/upperNav";
+import Janus from "janus-gateway";
 
 const LiveStream = () => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
+  const janusRef = useRef(null);
+  const streamingPluginRef = useRef(null);
 
   const [isLive, setIsLive] = useState(false);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeVideoId, setActiveVideoId] = useState(null);
 
-  const API_KEY = REACT_APP_API_KEY;
-  const liveStreamURL = "https://test.worldsamma.org/live/stream.m3u8";
+  const API_KEY = process.env.REACT_APP_API_KEY;
 
   // Fetch YouTube Playlist
   const fetchPlaylistVideos = async () => {
@@ -29,29 +31,67 @@ const LiveStream = () => {
     }
   };
 
-  // Check Live Stream Availability
-  const checkLiveStream = async () => {
-    try {
-      const response = await fetch(liveStreamURL, { method: "HEAD" });
-      setIsLive(response.ok); // `ok` is true if the resource is available
-    } catch (error) {
-      console.error("Error checking live stream:", error);
-      setIsLive(false);
-    }
+  const initializeJanusForViewing = () => {
+    Janus.init({
+      debug: "all",
+      callback: () => {
+        janusRef.current = new Janus({
+          server: "wss://test.worldsamma.org/ws/",
+          success: () => {
+            janusRef.current.attach({
+              plugin: "janus.plugin.streaming",
+              success: (pluginHandle) => {
+                streamingPluginRef.current = pluginHandle;
+                watchStream(pluginHandle, 1234); // Use the same room ID created earlier.
+              },
+              error: (err) => {
+                console.error("Error attaching plugin:", err);
+              },
+            });
+          },
+          error: (err) => {
+            console.error("Error initializing Janus Gateway:", err);
+          },
+        });
+      },
+    });
+  };
+
+  const watchStream = (plugin, janusRoomId) => {
+    const body = { request: "watch", id: janusRoomId };
+    plugin.send({
+      message: body,
+      success: () => {
+        console.log("Watching stream from room:", janusRoomId);
+        plugin.createAnswer({
+          media: { audioSend: false, videoSend: false }, // Receive only
+          success: (jsep) => {
+            plugin.send({ message: { request: "start" }, jsep });
+          },
+          error: (err) => {
+            console.error("Error creating WebRTC answer:", err);
+          },
+        });
+      },
+      error: (err) => {
+        console.error("Error watching stream:", err);
+      },
+    });
+
+    plugin.on("remoteStream", (stream) => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsLive(true);
+        console.log("Remote stream started.");
+      }
+    });
   };
 
   // Initialize Video.js Player
   useEffect(() => {
-    if (!playerRef.current && videoRef.current) {
-      playerRef.current = videojs(videoRef.current, {
-        controls: true,
-        autoplay: false,
-        preload: "auto",
-        responsive: true,
-        fluid: true,
-      });
-    }
+    initializeJanusForViewing();
     return () => {
+      if (janusRef.current) janusRef.current.destroy();
       if (playerRef.current) {
         playerRef.current.dispose();
         playerRef.current = null;
@@ -59,29 +99,11 @@ const LiveStream = () => {
     };
   }, []);
 
-  // Update Player Source
-  useEffect(() => {
-    if (playerRef.current) {
-      const source = isLive
-        ? [{ src: liveStreamURL, type: "application/x-mpegURL" }]
-        : videos.length > 0
-        ? [
-            {
-              src: `https://www.youtube.com/watch?v=${videos[0].snippet.resourceId.videoId}`,
-              type: "video/mp4",
-            },
-          ]
-        : [];
-
-      playerRef.current.src(source);
-    }
-  }, [isLive, videos]);
-
-  // Fetch Data on Mount
+  // Fetch Playlist Data on Mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchPlaylistVideos(), checkLiveStream()]);
+      await fetchPlaylistVideos();
       setLoading(false);
     };
     fetchData();
@@ -109,6 +131,8 @@ const LiveStream = () => {
             <video
               ref={videoRef}
               className="video-js vjs-default-skin"
+              autoPlay
+              controls
               aria-label="Live Stream Player"
             />
           </Box>
