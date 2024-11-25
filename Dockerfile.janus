@@ -26,16 +26,11 @@ RUN apt-get update && \
     automake \
     git \
     wget \
-    ffmpeg \
     tzdata \
     ca-certificates \
     libnice-dev \
     zlib1g-dev \
-    libwebsockets-dev \
-    libgstreamer1.0-dev \
-    gstreamer1.0-plugins-base \
-    gstreamer1.0-plugins-good \
-    gstreamer1.0-plugins-bad && \
+    libwebsockets-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Set timezone
@@ -53,7 +48,7 @@ RUN git clone https://github.com/sctplab/usrsctp.git /opt/usrsctp && \
     cd .. && rm -rf /opt/usrsctp
 
 # Clone and build Janus Gateway with minimal plugins
-RUN git clone --depth 1 https://github.com/jdtheefirst/janus-gateway.git /opt/janus-gateway && \
+RUN git clone --depth 1 https://github.com/meetecho/janus-gateway.git /opt/janus-gateway && \
     cd /opt/janus-gateway && \
     sh autogen.sh && \
     ./configure --enable-websockets --enable-data-channels --disable-rabbitmq --disable-mqtt --disable-docs && \
@@ -61,9 +56,6 @@ RUN git clone --depth 1 https://github.com/jdtheefirst/janus-gateway.git /opt/ja
     make install && \
     make configs
 
-# Copy custom plugin if needed
-RUN cp /opt/janus-gateway/src/plugins/libjanus_rtmp.so /usr/local/lib/janus/plugins/ && \
-    cp /opt/janus-gateway/conf/janus.plugin.rtmp.cfg.sample /usr/local/etc/janus/
 
 # Expose necessary ports
 EXPOSE 8088 8089 8188 8189

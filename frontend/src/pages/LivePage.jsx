@@ -11,7 +11,6 @@ import UpperNav from "../miscellenious/upperNav";
 
 const JanusRtmpStreamer = () => {
   const janusRef = useRef(null);
-  const [rtmpPlugin, setRtmpPlugin] = useState(null);
   const [streaming, setStreaming] = useState(false);
   const [connected, setConnected] = useState(false);
   const localVideoRef = useRef(null);
@@ -64,12 +63,12 @@ const JanusRtmpStreamer = () => {
         const janus = new Janus({
           server: "wss://test.worldsamma.org/ws/",
           success: () => {
+            const janusRoomId = 1234;
             setConnected(true);
             janus.attach({
-              plugin: "janus.plugin.streaming",
+              plugin: "janus.plugin.videoroom", // Use VideoRoom plugin for live streaming
               success: (pluginHandle) => {
-                setRtmpPlugin(pluginHandle);
-                createStream(pluginHandle);
+                createStream(pluginHandle, janusRoomId); // Create a VideoRoom (broadcasting room)
               },
               error: (err) => {
                 console.error("Error attaching plugin:", err);
@@ -83,45 +82,67 @@ const JanusRtmpStreamer = () => {
       },
     });
   };
-
-  const createStream = (plugin) => {
-    const janusRoomId = 1234; // Assign a unique ID for the stream room.
+  const createStream = (plugin, janusRoomId) => {
+    // First, check if the room already exists. If it does, just skip creation.
     plugin.send({
       message: {
-        request: "create",
-        type: "live",
-        id: janusRoomId,
-        description: "My Live Stream",
-        audio: true,
-        video: true,
+        request: "join", // Try to join the room if it exists.
+        room: janusRoomId, // Room ID
+        ptype: "publisher", // Join as publisher
       },
       success: () => {
-        console.log("Stream room created with ID:", janusRoomId);
-        attachLocalStream(plugin, janusRoomId);
+        console.log("Joined the existing room successfully.");
+        attachLocalStream(plugin, janusRoomId); // Proceed with stream attachment if joining is successful
       },
       error: (err) => {
-        console.error("Error creating stream room:", err);
+        if (err && err.indexOf("already exists") === -1) {
+          // Only attempt to create the room if it doesn't exist
+          plugin.send({
+            message: {
+              request: "create", // Create the room if it doesn't exist
+              room: janusRoomId, // Room ID
+              description: "My Live Stream", // Stream description
+              ptype: "publisher", // Publisher type
+              audio: true,
+              video: true,
+            },
+            success: () => {
+              console.log("Stream room created successfully.");
+              attachLocalStream(plugin, janusRoomId); // Proceed to attach the local stream
+            },
+            error: (err) => {
+              console.error("Error creating stream room:", err);
+            },
+          });
+        } else {
+          console.error("Error joining or creating the room:", err);
+        }
       },
     });
   };
 
   const attachLocalStream = async (plugin, janusRoomId) => {
     try {
+      // Get local media stream (video + audio)
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { width: 1280, height: 720, frameRate: 30 },
         audio: true,
       });
+
+      // Display local video in the browser
       localVideoRef.current.srcObject = stream;
       localStreamRef.current = stream;
 
+      // Create WebRTC offer for the stream
       plugin.createOffer({
         media: { video: true, audio: true },
         stream,
         success: (jsep) => {
+          // Send the offer to the VideoRoom to publish the stream
           plugin.send({
             message: {
-              request: "publish",
-              id: janusRoomId,
+              request: "publish", // Publish the stream to the room
+              room: janusRoomId, // The room to publish to
             },
             jsep,
           });
@@ -136,31 +157,11 @@ const JanusRtmpStreamer = () => {
     }
   };
 
-  const startStreaming = () => {
-    if (rtmpPlugin) {
-      rtmpPlugin.send({
-        message: { request: "publish" },
-        success: () => {
-          console.log("Streaming started successfully!");
-          setStreaming(true);
-        },
-        error: (err) => {
-          console.error("Error starting stream:", err);
-        },
-      });
-    } else {
-      console.error("RTMP plugin not attached.");
-    }
-  };
-
   const stopStreaming = () => {
-    if (rtmpPlugin) {
-      rtmpPlugin.hangup();
-      setConnected(false);
-      setStreaming(false);
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
+    setConnected(false);
+    setStreaming(false);
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
     }
   };
 
@@ -170,10 +171,6 @@ const JanusRtmpStreamer = () => {
       console.log("Janus destroyed successfully");
       setConnected(false);
       setStreaming(false);
-    }
-    if (rtmpPlugin) {
-      rtmpPlugin.detach(); // Detach the plugin
-      console.log("Detached from streaming plugin");
     }
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -241,8 +238,7 @@ const JanusRtmpStreamer = () => {
         <Flex justifyContent="center" gap={2}>
           <Button
             leftIcon={<FaPlay />}
-            onClick={startStreaming}
-            isDisabled={streaming || !connected}
+            isDisabled
             colorScheme="green"
             size="lg"
             fontSize={"sm"}
@@ -253,7 +249,6 @@ const JanusRtmpStreamer = () => {
           <Button
             leftIcon={<FaStop />}
             onClick={stopStreaming}
-            isDisabled={!streaming}
             colorScheme="red"
             size="lg"
             fontSize={"sm"}

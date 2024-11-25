@@ -36,13 +36,13 @@ const LiveStream = () => {
       debug: "all",
       callback: () => {
         janusRef.current = new Janus({
-          server: "wss://test.worldsamma.org/ws/",
+          server: "wss://test.worldsamma.org/ws/", // Your Janus server URL
           success: () => {
             janusRef.current.attach({
-              plugin: "janus.plugin.streaming",
+              plugin: "janus.plugin.videoroom", // Use the VideoRoom plugin for viewing
               success: (pluginHandle) => {
                 streamingPluginRef.current = pluginHandle;
-                watchStream(pluginHandle, 1234); // Use the same room ID created earlier.
+                joinRoom(pluginHandle, 1234); // Use the same room ID created earlier for viewing
               },
               error: (err) => {
                 console.error("Error attaching plugin:", err);
@@ -57,43 +57,62 @@ const LiveStream = () => {
     });
   };
 
-  const watchStream = (plugin, janusRoomId) => {
-    const body = { request: "watch", id: janusRoomId };
+  const joinRoom = (plugin, janusRoomId) => {
     plugin.send({
-      message: body,
-      success: () => {
-        console.log("Watching stream from room:", janusRoomId);
-        plugin.createAnswer({
-          media: { audioSend: false, videoSend: false }, // Receive only
-          success: (jsep) => {
-            plugin.send({ message: { request: "start" }, jsep });
-          },
-          error: (err) => {
-            console.error("Error creating WebRTC answer:", err);
-          },
-        });
+      message: {
+        request: "join", // Join the room as a viewer
+        room: janusRoomId,
+        ptype: "viewer", // Specify that this is a viewer
+      },
+      success: (response) => {
+        console.log("Successfully joined the room:", response);
+
+        // If the stream is already started, get the JSEP (Session Description Protocol) offer
+        const { jsep } = response || {};
+        if (jsep) {
+          console.log("Received JSEP:", jsep);
+          plugin.createAnswer({
+            jsep, // Pass the JSEP from the server to create an answer
+            media: { audioSend: false, videoSend: false }, // Receive only video/audio (viewer)
+            success: (jsepAnswer) => {
+              plugin.send({
+                message: { request: "start" }, // Start viewing the stream
+                jsep: jsepAnswer,
+              });
+              console.log("Stream started successfully.");
+            },
+            error: (err) => {
+              console.error("Error creating WebRTC answer:", err);
+            },
+          });
+        } else {
+          console.warn(
+            "JSEP is missing. The stream might not have started yet."
+          );
+        }
       },
       error: (err) => {
-        console.error("Error watching stream:", err);
+        console.error("Error joining room:", err);
       },
     });
 
-    plugin.on("remoteStream", (stream) => {
+    // Listen for remote streams (admin's stream)
+    plugin.onremotestream = (stream) => {
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsLive(true);
+        videoRef.current.srcObject = stream; // Attach the received stream to the video element
+        setIsLive(true); // Set live status to true when stream starts
         console.log("Remote stream started.");
       }
-    });
+    };
   };
 
-  // Initialize Video.js Player
+  // Initialize Video.js Player (if you are using it, otherwise, this could be removed)
   useEffect(() => {
     initializeJanusForViewing();
     return () => {
-      if (janusRef.current) janusRef.current.destroy();
+      if (janusRef.current) janusRef.current.destroy(); // Clean up the Janus connection
       if (playerRef.current) {
-        playerRef.current.dispose();
+        playerRef.current.dispose(); // Dispose of Video.js player if you're using it
         playerRef.current = null;
       }
     };
