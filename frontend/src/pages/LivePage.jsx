@@ -16,8 +16,9 @@ const JanusRtmpStreamer = () => {
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
 
+  // Local stream setup
   useEffect(() => {
-    const initialize = async () => {
+    const setupLocalStream = async () => {
       try {
         // Check permissions
         const cameraPermission = await navigator.permissions.query({
@@ -32,31 +33,59 @@ const JanusRtmpStreamer = () => {
           micPermission.state !== "granted"
         ) {
           console.warn("Camera or microphone permissions are not granted.");
-          // Optionally show a UI prompt here to notify the user
-        } else {
           alert("Please allow camera and microphone access to stream.");
-          console.log("Permissions granted for camera and microphone.");
+          return; // Do not initialize Janus if permissions are not granted
         }
 
-        // Initialize Janus
-        initializeJanusForPublishing();
+        console.log("Permissions granted for camera and microphone.");
+
+        // Get the local media stream (audio + video)
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 1280, height: 720, frameRate: 30 },
+          audio: true,
+        });
+
+        // Display local video in the browser
+        localVideoRef.current.srcObject = stream;
+        localStreamRef.current = stream;
       } catch (error) {
-        console.error(
-          "Error initializing Janus or checking permissions:",
-          error
-        );
+        console.error("Error initializing local stream:", error);
       }
     };
 
-    initialize();
+    setupLocalStream();
 
-    // Cleanup logic on component unmount
     return () => {
-      cleanUp();
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
     };
   }, []);
 
-  const initializeJanusForPublishing = () => {
+  const startStreaming = () => {
+    setStreaming(true);
+
+    // Check that localStreamRef is available
+    if (!localStreamRef.current) {
+      console.error("Local stream is not available.");
+      return;
+    }
+
+    // Ensure media tracks are available
+    const stream = localStreamRef.current;
+    const videoTrack = stream.getVideoTracks()[0];
+    const audioTrack = stream.getAudioTracks()[0];
+
+    if (!videoTrack || !audioTrack) {
+      console.error("Video or audio track is missing.");
+      return;
+    }
+
+    // Proceed with Janus initialization only when media is available
+    initializeJanusForPublishing(stream);
+  };
+
+  const initializeJanusForPublishing = (stream) => {
     Janus.init({
       debug: "all",
       callback: () => {
@@ -66,9 +95,9 @@ const JanusRtmpStreamer = () => {
             const janusRoomId = 1234;
             setConnected(true);
             janus.attach({
-              plugin: "janus.plugin.videoroom", // Use VideoRoom plugin for live streaming
+              plugin: "janus.plugin.videoroom",
               success: (pluginHandle) => {
-                createStream(pluginHandle, janusRoomId); // Create a VideoRoom (broadcasting room)
+                createStream(pluginHandle, janusRoomId, stream);
               },
               error: (err) => {
                 console.error("Error attaching plugin:", err);
@@ -82,33 +111,32 @@ const JanusRtmpStreamer = () => {
       },
     });
   };
-  const createStream = (plugin, janusRoomId) => {
-    // First, check if the room already exists. If it does, just skip creation.
+
+  const createStream = (plugin, janusRoomId, stream) => {
     plugin.send({
       message: {
-        request: "join", // Try to join the room if it exists.
-        room: janusRoomId, // Room ID
-        ptype: "publisher", // Join as publisher
+        request: "join",
+        room: janusRoomId,
+        ptype: "publisher",
       },
       success: () => {
         console.log("Joined the existing room successfully.");
-        attachLocalStream(plugin, janusRoomId); // Proceed with stream attachment if joining is successful
+        attachLocalStream(plugin, janusRoomId, stream);
       },
       error: (err) => {
         if (err && err.indexOf("already exists") === -1) {
-          // Only attempt to create the room if it doesn't exist
           plugin.send({
             message: {
-              request: "create", // Create the room if it doesn't exist
-              room: janusRoomId, // Room ID
-              description: "My Live Stream", // Stream description
-              ptype: "publisher", // Publisher type
+              request: "create",
+              room: janusRoomId,
+              description: "My Live Stream",
+              ptype: "publisher",
               audio: true,
               video: true,
             },
             success: () => {
               console.log("Stream room created successfully.");
-              attachLocalStream(plugin, janusRoomId); // Proceed to attach the local stream
+              attachLocalStream(plugin, janusRoomId, stream);
             },
             error: (err) => {
               console.error("Error creating stream room:", err);
@@ -121,57 +149,29 @@ const JanusRtmpStreamer = () => {
     });
   };
 
-  const attachLocalStream = async (plugin, janusRoomId) => {
-    try {
-      // Get local media stream (video + audio)
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720, frameRate: 30 },
-        audio: true,
-      });
-
-      // Display local video in the browser
-      localVideoRef.current.srcObject = stream;
-      localStreamRef.current = stream;
-
-      // Create WebRTC offer for the stream
-      plugin.createOffer({
-        media: { video: true, audio: true },
-        stream,
-        success: (jsep) => {
-          // Send the offer to the VideoRoom to publish the stream
-          plugin.send({
-            message: {
-              request: "publish", // Publish the stream to the room
-              room: janusRoomId, // The room to publish to
-            },
-            jsep,
-          });
-          console.log("Publishing stream to room:", janusRoomId);
-        },
-        error: (err) => {
-          console.error("Error creating WebRTC offer:", err);
-        },
-      });
-    } catch (err) {
-      console.error("Error accessing user media:", err);
-    }
+  const attachLocalStream = (plugin, janusRoomId, stream) => {
+    plugin.createOffer({
+      media: { video: true, audio: true },
+      stream,
+      success: (jsep) => {
+        plugin.send({
+          message: {
+            request: "publish",
+            room: janusRoomId,
+          },
+          jsep,
+        });
+        console.log("Publishing stream to room:", janusRoomId);
+      },
+      error: (err) => {
+        console.error("Error creating WebRTC offer:", err);
+      },
+    });
   };
 
   const stopStreaming = () => {
     setConnected(false);
     setStreaming(false);
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop());
-    }
-  };
-
-  const cleanUp = () => {
-    if (janusRef.current) {
-      janusRef.current.destroy();
-      console.log("Janus destroyed successfully");
-      setConnected(false);
-      setStreaming(false);
-    }
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -238,7 +238,7 @@ const JanusRtmpStreamer = () => {
         <Flex justifyContent="center" gap={2}>
           <Button
             leftIcon={<FaPlay />}
-            isDisabled
+            onClick={startStreaming} // Start streaming on click
             colorScheme="green"
             size="lg"
             fontSize={"sm"}
