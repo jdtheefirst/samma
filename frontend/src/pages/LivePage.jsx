@@ -90,7 +90,7 @@ const JanusRtmpStreamer = () => {
       debug: "all",
       callback: () => {
         const janus = new Janus({
-          server: "wss://test.worldsamma.org/ws/",
+          server: "ws://test.worldsamma.org:8188",
           success: () => {
             const janusRoomId = 1234;
             setConnected(true);

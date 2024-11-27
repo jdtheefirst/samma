@@ -36,7 +36,7 @@ const LiveStream = () => {
       debug: "all",
       callback: () => {
         janusRef.current = new Janus({
-          server: "wss://test.worldsamma.org/ws/", // Your Janus server URL
+          server: "ws://test.worldsamma.org:8188", // Your Janus server URL
           success: () => {
             janusRef.current.attach({
               plugin: "janus.plugin.videoroom", // Use the VideoRoom plugin for viewing
