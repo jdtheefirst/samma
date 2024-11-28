@@ -24,7 +24,6 @@
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "express-rate-limit": "^7.1.5",
-    "janus-gateway": "^1.2.4",
     "jsonwebtoken": "^9.0.2",
     "livekit-server-sdk": "^2.8.1",
     "mongoose": "^8.0.3",

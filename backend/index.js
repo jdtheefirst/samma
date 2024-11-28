@@ -15,7 +15,6 @@ const downloadRouter = require("./routes/downloadRouter");
 const { AccessToken } = require("livekit-server-sdk");
 const { protect } = require("./middleware/authMiddleware");
 
-const path = require("path");
 const bodyParser = require("body-parser");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { initializeSocketIO } = require("./socket");

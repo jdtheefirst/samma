@@ -13,7 +13,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - janus
+      - livekit
     command: node backend/index.js
 
   nginx:
@@ -26,6 +26,6 @@ services:
       - "1935:1935"
     depends_on:
       - backend
-      - janus
+      - livekit
     volumes:
       - ./frontend/build:/usr/share/nginx/html:ro
