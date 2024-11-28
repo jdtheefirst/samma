@@ -4,9 +4,11 @@ FROM livekit/livekit-server:latest
 # Set environment variables for LiveKit server configuration
 ENV LIVEKIT_RELAY_MODE=basic
 
+# Copy custom config.yaml
+COPY config.yaml /etc/livekit/config.yaml
+
 # Expose ports for the server
 EXPOSE 7880 7881
 
 # Start LiveKit server
-CMD ["livekit-server", "--key", "livekit", "--secret", "livekit"]
-
+CMD ["livekit", "--config", "/etc/livekit/config.yaml"]
