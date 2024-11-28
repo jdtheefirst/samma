@@ -1,44 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
-import "../App.css";
-import "webrtc-adapter";
-import StatusIndicator from "../components/Status";
 import { Box, Flex, Heading, Text, Spinner } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
-import Janus from "janus-gateway";
+import { connect, LocalAudioTrack, LocalVideoTrack } from "livekit-client";
 import VideoPlayer from "../components/video";
 import UpperNav from "../miscellenious/upperNav";
+import axios from "axios";
+import { ChatState } from "../components/Context/ChatProvider";
+import { useNavigate } from "react-router-dom";
 
-const JanusRtmpStreamer = () => {
-  const janusRef = useRef(null);
+const LiveKitRtmpStreamer = () => {
   const [streaming, setStreaming] = useState(false);
   const [connected, setConnected] = useState(false);
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
+  const roomRef = useRef(null);
+  const { user } = ChatState();
+  const navigate = useNavigate();
 
   // Local stream setup
   useEffect(() => {
     const setupLocalStream = async () => {
       try {
-        // Check permissions
-        const cameraPermission = await navigator.permissions.query({
-          name: "camera",
-        });
-        const micPermission = await navigator.permissions.query({
-          name: "microphone",
-        });
-
-        if (
-          cameraPermission.state !== "granted" ||
-          micPermission.state !== "granted"
-        ) {
-          console.warn("Camera or microphone permissions are not granted.");
-          alert("Please allow camera and microphone access to stream.");
-          return; // Do not initialize Janus if permissions are not granted
-        }
-
-        console.log("Permissions granted for camera and microphone.");
-
         // Get the local media stream (audio + video)
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 1280, height: 720, frameRate: 30 },
@@ -62,10 +45,36 @@ const JanusRtmpStreamer = () => {
     };
   }, []);
 
+  const getLiveKitTokenFromBackend = async () => {
+    if (!user) {
+      navigate("/dashboard");
+
+      return;
+    }
+
+    const config = {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${user.token}`,
+      },
+    };
+
+    try {
+      const { token } = await axios.post(
+        "/api/generate-token?identity=" + user.token + "&room=test-room",
+        config
+      );
+      console.log(token);
+
+      return token;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const startStreaming = () => {
     setStreaming(true);
 
-    // Check that localStreamRef is available
     if (!localStreamRef.current) {
       console.error("Local stream is not available.");
       return;
@@ -81,97 +90,40 @@ const JanusRtmpStreamer = () => {
       return;
     }
 
-    // Proceed with Janus initialization only when media is available
-    initializeJanusForPublishing(stream);
+    // Proceed with LiveKit initialization only when media is available
+    initializeLiveKitForPublishing(stream);
   };
 
-  const initializeJanusForPublishing = (stream) => {
-    Janus.init({
-      debug: "all",
-      callback: () => {
-        const janus = new Janus({
-          server: "ws://test.worldsamma.org:8188",
-          success: () => {
-            const janusRoomId = 1234;
-            setConnected(true);
-            janus.attach({
-              plugin: "janus.plugin.videoroom",
-              success: (pluginHandle) => {
-                createStream(pluginHandle, janusRoomId, stream);
-              },
-              error: (err) => {
-                console.error("Error attaching plugin:", err);
-              },
-            });
-          },
-          error: (err) => {
-            console.error("Error initializing Janus Gateway:", err);
-          },
-        });
-      },
-    });
-  };
+  const initializeLiveKitForPublishing = async (stream) => {
+    const roomUrl = "wss://test.worldsamma.org/livekit/";
+    const token = await getLiveKitTokenFromBackend();
 
-  const createStream = (plugin, janusRoomId, stream) => {
-    plugin.send({
-      message: {
-        request: "join",
-        room: janusRoomId,
-        ptype: "publisher",
-      },
-      success: () => {
-        console.log("Joined the existing room successfully.");
-        attachLocalStream(plugin, janusRoomId, stream);
-      },
-      error: (err) => {
-        if (err && err.indexOf("already exists") === -1) {
-          plugin.send({
-            message: {
-              request: "create",
-              room: janusRoomId,
-              description: "My Live Stream",
-              ptype: "publisher",
-              audio: true,
-              video: true,
-            },
-            success: () => {
-              console.log("Stream room created successfully.");
-              attachLocalStream(plugin, janusRoomId, stream);
-            },
-            error: (err) => {
-              console.error("Error creating stream room:", err);
-            },
-          });
-        } else {
-          console.error("Error joining or creating the room:", err);
-        }
-      },
-    });
-  };
+    connect(roomUrl, { token })
+      .then((room) => {
+        roomRef.current = room;
+        setConnected(true);
 
-  const attachLocalStream = (plugin, janusRoomId, stream) => {
-    plugin.createOffer({
-      media: { video: true, audio: true },
-      stream,
-      success: (jsep) => {
-        plugin.send({
-          message: {
-            request: "publish",
-            room: janusRoomId,
-          },
-          jsep,
-        });
-        console.log("Publishing stream to room:", janusRoomId);
-      },
-      error: (err) => {
-        console.error("Error creating WebRTC offer:", err);
-      },
-    });
+        // Local tracks
+        const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
+        const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
+
+        // Publish local tracks to the room
+        room.localParticipant.publishTrack(localAudio);
+        room.localParticipant.publishTrack(localVideo);
+
+        console.log("Streaming to LiveKit room...");
+      })
+      .catch((err) => {
+        console.error("Error during LiveKit connection:", err);
+      });
   };
 
   const stopStreaming = () => {
     setConnected(false);
     setStreaming(false);
+    if (roomRef.current) {
+      roomRef.current.disconnect();
+    }
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -225,20 +177,14 @@ const JanusRtmpStreamer = () => {
         </Heading>
 
         <Flex justifyContent="space-around" mb={3}>
-          <StatusIndicator
-            status={connected ? "Connected" : "Disconnected"}
-            isConnected={connected}
-          />
-          <StatusIndicator
-            status={streaming ? "Live" : "Idle"}
-            isConnected={streaming}
-          />
+          <Text>Status: {connected ? "Connected" : "Disconnected"}</Text>
+          <Text>Status: {streaming ? "Live" : "Idle"}</Text>
         </Flex>
 
         <Flex justifyContent="center" gap={2}>
           <Button
             leftIcon={<FaPlay />}
-            onClick={startStreaming} // Start streaming on click
+            onClick={startStreaming}
             colorScheme="green"
             size="lg"
             fontSize={"sm"}
@@ -261,4 +207,4 @@ const JanusRtmpStreamer = () => {
   );
 };
 
-export default JanusRtmpStreamer;
+export default LiveKitRtmpStreamer;

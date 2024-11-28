@@ -12,6 +12,8 @@ const voteRouter = require("./routes/voteRouter");
 const donateRouter = require("./routes/donateRouter");
 const useTranslator = require("./routes/translateRouter");
 const downloadRouter = require("./routes/downloadRouter");
+const { AccessToken } = require("livekit-server-sdk");
+const { protect } = require("./middleware/authMiddleware");
 
 const path = require("path");
 const bodyParser = require("body-parser");
@@ -39,6 +41,22 @@ app.use((req, res, next) => {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
+});
+
+app.post("/api/generate-livekit-token", protect, (req, res) => {
+  const token = new AccessToken(
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET,
+    {
+      identity: req.query.identity,
+      room: req.query.room,
+      ttl: 3600, // Token expiry time in seconds
+    }
+  );
+  token.addGrant({ roomJoin: true }); // Grant permissions, like joining rooms
+
+  const tokenJwt = token.toJwt();
+  res.json({ token: tokenJwt });
 });
 
 // API routes

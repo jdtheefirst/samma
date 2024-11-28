@@ -1,11 +1,10 @@
 services:
-  janus:
+  livekit:
     build:
       context: .
-      dockerfile: Dockerfile.janus
-    network_mode: "host"
-    environment:
-      - JANUS_LOG_LEVEL=4
+      dockerfile: Dockerfile.livekit
+    expose:
+      - 7880
 
   backend:
     build:
