@@ -11,4 +11,6 @@ COPY config.yaml /etc/livekit/config.yaml
 EXPOSE 7880 7881
 
 # Start LiveKit server
-CMD ["livekit", "--config", "/etc/livekit/config.yaml"]
+CMD ["/livekit-server", "--config", "/etc/livekit/config.yaml", "--node-ip", "127.0.0.1"]
+
+
