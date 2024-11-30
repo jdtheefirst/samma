@@ -13,4 +13,3 @@ EXPOSE 7880 7881
 # Start LiveKit server
 CMD ["/livekit-server", "--config", "/etc/livekit/config.yaml", "--node-ip", "127.0.0.1"]
 
-

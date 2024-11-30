@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile.livekit
     expose:
       - 7880
+    volumes:
+      - ./config.yaml:/etc/livekit/config.yaml:ro
 
   backend:
     build:
