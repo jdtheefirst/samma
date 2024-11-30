@@ -4,12 +4,18 @@ FROM livekit/livekit-server:latest
 # Set environment variables for LiveKit server configuration
 ENV LIVEKIT_RELAY_MODE=basic
 
+WORKDIR /
+
 # Copy custom config.yaml
 COPY config.yaml /etc/livekit/config.yaml
+
+RUN ls -l /etc/livekit/ && cat /etc/livekit/config.yaml
+
+# Set proper permissions for config.yaml
+RUN chown root:root /etc/livekit/config.yaml && chmod 644 /etc/livekit/config.yaml
 
 # Expose ports for the server
 EXPOSE 7880 7881
 
 # Start LiveKit server
-CMD ["/livekit-server", "--config", "/etc/livekit/config.yaml", "--node-ip", "127.0.0.1"]
-
+CMD ["/livekit-server", "--config", "/etc/livekit/config.yaml", "--key-file", "/etc/livekit/config.yaml"]
