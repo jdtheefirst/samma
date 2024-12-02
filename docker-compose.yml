@@ -7,6 +7,9 @@ services:
     environment:
       - LIVEKIT_API_KEY=livekit
       - LIVEKIT_API_SECRET=livekit
+      - LIVEKIT_KEY_FILE=/etc/livekit/key-file.json
+    volumes:
+      - /key-file.json:/etc/livekit/key-file.json
     restart: unless-stopped
 
   # Optional: Custom Backend (Replace LiveKit backend)

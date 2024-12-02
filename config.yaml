@@ -1,7 +1,0 @@
-keys:
-  - key: livekit
-    secret: livekit
-rtc:
-  enabled: true
-api:
-  enabled: true
