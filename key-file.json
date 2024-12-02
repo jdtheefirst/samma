@@ -1,4 +1,6 @@
 {
   "api_key": "livekit",
-  "api_secret": "livekit"
+  "api_secret": "livekit",
+  "signaling_address": "ws://livekit:7880",
+  "rtc_address": "udp://livekit:7881"
 }

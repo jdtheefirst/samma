@@ -20,4 +20,4 @@ USER livekit
 ENTRYPOINT ["/livekit-server"]
 
 # Default command to run LiveKit server
-CMD ["--config", "/etc/livekit/config.json"]
+CMD ["--config", "/etc/livekit/key-file.json"]
