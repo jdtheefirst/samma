@@ -1,3 +1,7 @@
+networks:
+  jitsi-network:
+    driver: bridge
+
 services:
   # Jitsi Meet Frontend
   jitsi-meet:
@@ -14,6 +18,8 @@ services:
     volumes:
       - ./jitsi-config/web:/config
     restart: unless-stopped
+    networks:
+      - jitsi-network
 
   # XMPP Server (Prosody)
   prosody:
@@ -26,6 +32,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./jitsi-config/prosody:/config
+    networks:
+      - jitsi-network
 
   # Conference Focus Component
   jicofo:
@@ -35,12 +43,15 @@ services:
       - XMPP_DOMAIN=test.worldsamma.org
       - XMPP_AUTH_DOMAIN=auth.test.worldsamma.org
       - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.test.worldsamma.org
+      - XMPP_SERVER=prosody
       - JICOFO_AUTH_PASSWORD=secret
     depends_on:
       - prosody
     restart: unless-stopped
     volumes:
       - ./jitsi-config/jicofo:/config
+    networks:
+      - jitsi-network
 
   # Video Bridge
   jitsi-videobridge:
@@ -54,6 +65,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./jitsi-config/jvb:/config
+    networks:
+      - jitsi-network
 
   # Optional: Custom Backend (Replace LiveKit backend)
   backend:
