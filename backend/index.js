@@ -12,7 +12,6 @@ const voteRouter = require("./routes/voteRouter");
 const donateRouter = require("./routes/donateRouter");
 const useTranslator = require("./routes/translateRouter");
 const downloadRouter = require("./routes/downloadRouter");
-const { AccessToken } = require("livekit-server-sdk");
 const { protect } = require("./middleware/authMiddleware");
 
 const bodyParser = require("body-parser");
@@ -42,7 +41,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/generate-livekit-token", protect, (req, res) => {
+app.post("/api/generate-livekit-token", protect, async (req, res) => {
+  const { AccessToken } = await import("livekit-server-sdk");
+
   const token = new AccessToken(
     process.env.LIVEKIT_API_KEY,
     process.env.LIVEKIT_API_SECRET,
