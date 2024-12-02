@@ -7,8 +7,11 @@ services:
       - "7880:7880"
       - "7881:7881"
     volumes:
-      - ./config.yaml:/etc/livekit/config.yaml.json:ro
+      - ./config.yaml:/etc/livekit/config.yaml:ro
     restart: unless-stopped
+    environment:
+      - LIVEKIT_API_KEY: p7LNKEBaHJiOeGmFen5GQXABglf71s
+      - LIVEKIT_API_SECRET: 6PErE43LHsDxfBwqGM8xZq4JZuTMxQ
 
   backend:
     build:
