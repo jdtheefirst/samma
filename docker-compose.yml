@@ -1,13 +1,61 @@
 services:
-  livekit:
-    build:
-      context: .
-      dockerfile: Dockerfile.livekit
-    expose:
-      - 7880
+  # Jitsi Meet Frontend
+  jitsi-meet:
+    image: jitsi/web:stable
+    container_name: jitsi-meet
+    ports:
+      - "80:80"
+      - "443:443"
+      - "10000:10000/udp"
+    environment:
+      - HTTP_PORT=80
+      - HTTPS_PORT=443
+      - VIRTUAL_HOST=test.worldsamma.org
     volumes:
-      - ./config.yaml:/etc/livekit/config.yaml:ro
+      - ./jitsi-config/web:/config
+    restart: unless-stopped
 
+  # XMPP Server (Prosody)
+  prosody:
+    image: jitsi/prosody:stable
+    container_name: prosody
+    environment:
+      - XMPP_DOMAIN=test.worldsamma.org
+      - AUTH_TYPE=jwt
+      - JWT_SECRET=mysecretkey
+    restart: unless-stopped
+    volumes:
+      - ./jitsi-config/prosody:/config
+
+  # Conference Focus Component
+  jicofo:
+    image: jitsi/jicofo:stable
+    container_name: jicofo
+    environment:
+      - XMPP_DOMAIN=test.worldsamma.org
+      - XMPP_AUTH_DOMAIN=auth.test.worldsamma.org
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.test.worldsamma.org
+      - JICOFO_AUTH_PASSWORD=secret
+    depends_on:
+      - prosody
+    restart: unless-stopped
+    volumes:
+      - ./jitsi-config/jicofo:/config
+
+  # Video Bridge
+  jitsi-videobridge:
+    image: jitsi/jvb:stable
+    container_name: jitsi-videobridge
+    environment:
+      - XMPP_SERVER=prosody
+      - XMPP_DOMAIN=test.worldsamma.org
+    depends_on:
+      - prosody
+    restart: unless-stopped
+    volumes:
+      - ./jitsi-config/jvb:/config
+
+  # Optional: Custom Backend (Replace LiveKit backend)
   backend:
     build:
       context: .
@@ -15,9 +63,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - livekit
+      - jitsi-meet
     command: node backend/index.js
 
+  # Optional: Custom NGINX
   nginx:
     build:
       context: .
@@ -25,9 +74,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "1935:1935"
     depends_on:
       - backend
-      - livekit
+      - jitsi-meet
     volumes:
       - ./frontend/build:/usr/share/nginx/html:ro

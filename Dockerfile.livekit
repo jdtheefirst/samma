@@ -1,21 +1,26 @@
-# Use the official LiveKit server image from Docker Hub
-FROM livekit/livekit-server:latest
+# Use the official Jitsi Meet Docker image
+FROM jitsi/jitsi-meet:latest
 
-# Set environment variables for LiveKit server configuration
-ENV LIVEKIT_RELAY_MODE=basic
+# Set the working directory
+WORKDIR /usr/share/jitsi-meet
 
-WORKDIR /
+# Copy custom configurations (if needed)
+# Jitsi uses a config directory for its environment variables and configurations
+COPY config/ /config/
 
-# Copy custom config.yaml
-COPY config.yaml /etc/livekit/config.yaml
+# Optionally, you can set environment variables for custom configuration
+# For example, for Jitsi Meet, you might configure:
+ENV HTTP_PORT=80
+ENV HTTPS_PORT=443
+ENV JWT_ENABLED=true
+ENV JWT_SECRET=mysecretkey
 
-RUN ls -l /etc/livekit/ && cat /etc/livekit/config.yaml
-
-# Set proper permissions for config.yaml
-RUN chown root:root /etc/livekit/config.yaml && chmod 644 /etc/livekit/config.yaml
+# Set up SSL certificates (if using HTTPS)
+# You can copy your SSL certificates here if you're using HTTPS
+# COPY ssl/ /etc/letsencrypt/
 
 # Expose ports for the server
-EXPOSE 7880 7881
+EXPOSE 80 443
 
-# Start LiveKit server
-CMD ["/livekit-server", "--config", "/etc/livekit/config.yaml", "--key-file", "/etc/livekit/config.yaml"]
+# Start Jitsi Meet (Jitsi is already configured to start using CMD in the base image)
+CMD ["/usr/share/jitsi-meet/scripts/prosodyctl", "start"]
