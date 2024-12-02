@@ -10,8 +10,8 @@ services:
       - ./config.yaml:/etc/livekit/config.yaml:ro
     restart: unless-stopped
     environment:
-      - LIVEKIT_API_KEY: p7LNKEBaHJiOeGmFen5GQXABglf71s
-      - LIVEKIT_API_SECRET: 6PErE43LHsDxfBwqGM8xZq4JZuTMxQ
+      - LIVEKIT_API_KEY: "p7LNKEBaHJiOeGmFen5GQXABglf71s"
+      - LIVEKIT_API_SECRET: "6PErE43LHsDxfBwqGM8xZq4JZuTMxQ"
 
   backend:
     build:
