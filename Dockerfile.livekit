@@ -1,26 +1,23 @@
-# Use the official Jitsi Meet Docker image
-FROM jitsi/jitsi-meet:latest
+# Use the official LiveKit base image
+FROM livekit/livekit-server:latest
 
-# Set the working directory
-WORKDIR /usr/share/jitsi-meet
+# Create a new system group and user for LiveKit
+RUN addgroup --system livekit && adduser --system --ingroup livekit livekit
 
-# Copy custom configurations (if needed)
-# Jitsi uses a config directory for its environment variables and configurations
-COPY config/ /config/
+# Create the directory for the key file if it doesn't exist
+RUN mkdir -p /etc/livekit && chown livekit:livekit /etc/livekit
 
-# Optionally, you can set environment variables for custom configuration
-# For example, for Jitsi Meet, you might configure:
-ENV HTTP_PORT=80
-ENV HTTPS_PORT=443
-ENV JWT_ENABLED=true
-ENV JWT_SECRET=mysecretkey
+# Copy the key file into the container
+COPY key-file.json /etc/livekit/key-file.json
 
-# Set up SSL certificates (if using HTTPS)
-# You can copy your SSL certificates here if you're using HTTPS
-# COPY ssl/ /etc/letsencrypt/
+# Set the appropriate permissions for the key file
+RUN chmod 600 /etc/livekit/key-file.json && chown livekit:livekit /etc/livekit/key-file.json
 
-# Expose ports for the server
-EXPOSE 80 443
+# Switch to the livekit user to run the server with the correct privileges
+USER livekit
 
-# Start Jitsi Meet (Jitsi is already configured to start using CMD in the base image)
-CMD ["/usr/share/jitsi-meet/scripts/prosodyctl", "start"]
+# Set the entrypoint for the LiveKit server
+ENTRYPOINT ["/livekit-server"]
+
+# Default command to run LiveKit server
+CMD ["--config", "/etc/livekit/config.json"]

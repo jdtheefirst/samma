@@ -1,18 +1,15 @@
 services:
   livekit:
-    image: livekit/livekit-server:latest
-    container_name: livekit
+    build:
+      context: .
+      dockerfile: Dockerfile.livekit
     ports:
       - "7880:7880"
-    environment:
-      - LIVEKIT_API_KEY=livekit
-      - LIVEKIT_API_SECRET=livekit
-      - LIVEKIT_KEY_FILE=/etc/livekit/key-file.json
+      - "7881:7881"
     volumes:
-      - /key-file.json:/etc/livekit/key-file.json
+      - ./key-file.json:/etc/livekit/key-file.json:ro
     restart: unless-stopped
 
-  # Optional: Custom Backend (Replace LiveKit backend)
   backend:
     build:
       context: .
