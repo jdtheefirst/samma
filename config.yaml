@@ -1,0 +1,11 @@
+api:
+  key: "livekit"
+  secret: "livekit"
+
+rtc:
+  address: ":7880"
+  udp: ":7881"
+
+signaling:
+  address: ":7880"
+  transport: "ws"

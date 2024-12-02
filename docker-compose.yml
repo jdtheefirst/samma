@@ -7,7 +7,7 @@ services:
       - "7880:7880"
       - "7881:7881"
     volumes:
-      - ./key-file.json:/etc/livekit/key-file.json:ro
+      - ./config.yaml:/etc/livekit/config.yaml.json:ro
     restart: unless-stopped
 
   backend:

@@ -8,10 +8,10 @@ RUN addgroup --system livekit && adduser --system --ingroup livekit livekit
 RUN mkdir -p /etc/livekit && chown livekit:livekit /etc/livekit
 
 # Copy the key file into the container
-COPY key-file.json /etc/livekit/key-file.json
+COPY config.yaml /etc/livekit/config.yaml
 
 # Set the appropriate permissions for the key file
-RUN chmod 600 /etc/livekit/key-file.json && chown livekit:livekit /etc/livekit/key-file.json
+RUN chmod 600 /etc/livekit/config.yaml && chown livekit:livekit /etc/livekit/config.yaml
 
 # Switch to the livekit user to run the server with the correct privileges
 USER livekit
@@ -20,4 +20,4 @@ USER livekit
 ENTRYPOINT ["/livekit-server"]
 
 # Default command to run LiveKit server
-CMD ["--config", "/etc/livekit/key-file.json"]
+CMD ["--config", "/etc/livekit/config.yaml"]
