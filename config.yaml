@@ -1,17 +1,7 @@
-# API credentials for authentication (optional)
-api_key: "livekit"
-api_secret: "livekit"
-
-# RTC (Real-Time Communication) server configuration
+keys:
+  - key: livekit
+    secret: livekit
 rtc:
-  address: ":7880"
-  udp_address: ":7881"
-
-# Signaling server configuration
-signaling:
-  address: ":7880"
-  transport: "ws" # WebSocket transport for signaling
-
-# Other potential configurations (optional)
-# auth:
-#   api_key: "your-api-key"
+  enabled: true
+api:
+  enabled: true
