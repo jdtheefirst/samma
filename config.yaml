@@ -1,8 +1,8 @@
+port: 7880
 keys:
-  LIVEKIT_API_KEY: livekit
-  LIVEKIT_API_SECRET: livekit
+  LIVEKIT_API_KEY: p7LNKEBaHJiOeGmFen5GQXABglf71s
+  LIVEKIT_API_SECRET: 6PErE43LHsDxfBwqGM8xZq4JZuTMxQ
 rtc:
   port_range_start: 50000
   port_range_end: 60000
   tcp_port: 7881
-  use_external_ip: true
