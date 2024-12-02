@@ -2,6 +2,8 @@ keys:
   - key: livekit
     secret: livekit
 rtc:
-  enabled: true
-api:
-  enabled: true
+  address: ":7880"
+  udp_address: ":7881"
+signaling:
+  address: ":7880"
+  transport: "ws"
