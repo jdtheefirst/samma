@@ -1,72 +1,13 @@
-networks:
-  jitsi-network:
-    driver: bridge
-
 services:
-  # Jitsi Meet Frontend
-  jitsi-meet:
-    image: jitsi/web:stable
-    container_name: jitsi-meet
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit
     ports:
-      - "80:80"
-      - "443:443"
-      - "10000:10000/udp"
+      - "7880:7880"
     environment:
-      - HTTP_PORT=80
-      - HTTPS_PORT=443
-      - VIRTUAL_HOST=test.worldsamma.org
-    volumes:
-      - ./jitsi-config/web:/config
+      - LIVEKIT_API_KEY=livekit
+      - LIVEKIT_API_SECRET=livekit
     restart: unless-stopped
-    networks:
-      - jitsi-network
-
-  # XMPP Server (Prosody)
-  prosody:
-    image: jitsi/prosody:stable
-    container_name: prosody
-    environment:
-      - XMPP_DOMAIN=test.worldsamma.org
-      - AUTH_TYPE=jwt
-      - JWT_SECRET=mysecretkey
-    restart: unless-stopped
-    volumes:
-      - ./jitsi-config/prosody:/config
-    networks:
-      - jitsi-network
-
-  # Conference Focus Component
-  jicofo:
-    image: jitsi/jicofo:stable
-    container_name: jicofo
-    environment:
-      - XMPP_DOMAIN=test.worldsamma.org
-      - XMPP_AUTH_DOMAIN=auth.test.worldsamma.org
-      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.test.worldsamma.org
-      - XMPP_SERVER=prosody
-      - JICOFO_AUTH_PASSWORD=secret
-    depends_on:
-      - prosody
-    restart: unless-stopped
-    volumes:
-      - ./jitsi-config/jicofo:/config
-    networks:
-      - jitsi-network
-
-  # Video Bridge
-  jitsi-videobridge:
-    image: jitsi/jvb:stable
-    container_name: jitsi-videobridge
-    environment:
-      - XMPP_SERVER=prosody
-      - XMPP_DOMAIN=test.worldsamma.org
-    depends_on:
-      - prosody
-    restart: unless-stopped
-    volumes:
-      - ./jitsi-config/jvb:/config
-    networks:
-      - jitsi-network
 
   # Optional: Custom Backend (Replace LiveKit backend)
   backend:
@@ -76,7 +17,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - jitsi-meet
+      - livekit
     command: node backend/index.js
 
   nginx:
@@ -88,6 +29,6 @@ services:
       - "8443:443"
     depends_on:
       - backend
-      - jitsi-meet
+      - livekit
     volumes:
       - ./frontend/build:/usr/share/nginx/html:ro
