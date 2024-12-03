@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import { Box, Flex, Heading, Text, Spinner } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
-import { connect, LocalAudioTrack, LocalVideoTrack } from "livekit-client";
+import { LocalAudioTrack, LocalVideoTrack, Room } from "livekit-client";
 import VideoPlayer from "../components/video";
 import UpperNav from "../miscellenious/upperNav";
 import axios from "axios";
 import { ChatState } from "../components/Context/ChatProvider";
 import { useNavigate } from "react-router-dom";
 
-const LiveKitRtmpStreamer = () => {
+const Streamer = () => {
   const [streaming, setStreaming] = useState(false);
   const [connected, setConnected] = useState(false);
   const localVideoRef = useRef(null);
@@ -60,13 +60,13 @@ const LiveKitRtmpStreamer = () => {
     };
 
     try {
-      const { token } = await axios.post(
+      const { data } = await axios.post(
         "/api/generate-token?identity=" + user.token + "&room=test-room",
         config
       );
-      console.log(token);
+      console.log(data);
 
-      return token;
+      return data;
     } catch (error) {
       console.error(error);
     }
@@ -96,26 +96,28 @@ const LiveKitRtmpStreamer = () => {
 
   const initializeLiveKitForPublishing = async (stream) => {
     const roomUrl = "wss://test.worldsamma.org/livekit/";
-    const token = await getLiveKitTokenFromBackend();
+    try {
+      const token = await getLiveKitTokenFromBackend();
+      const room = new Room();
 
-    connect(roomUrl, { token })
-      .then((room) => {
-        roomRef.current = room;
-        setConnected(true);
+      // Connect to the room
+      await room.connect(roomUrl, token);
 
-        // Local tracks
-        const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
-        const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
+      roomRef.current = room;
+      setConnected(true);
 
-        // Publish local tracks to the room
-        room.localParticipant.publishTrack(localAudio);
-        room.localParticipant.publishTrack(localVideo);
+      // Local tracks
+      const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
+      const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
 
-        console.log("Streaming to LiveKit room...");
-      })
-      .catch((err) => {
-        console.error("Error during LiveKit connection:", err);
-      });
+      // Publish local tracks to the room
+      room.localParticipant.publishTrack(localAudio);
+      room.localParticipant.publishTrack(localVideo);
+
+      console.log("Streaming to LiveKit room...");
+    } catch (error) {
+      console.error("Error during LiveKit connection:", error);
+    }
   };
 
   const stopStreaming = () => {
@@ -207,4 +209,4 @@ const LiveKitRtmpStreamer = () => {
   );
 };
 
-export default LiveKitRtmpStreamer;
+export default Streamer;

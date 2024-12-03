@@ -1,7 +1,7 @@
 port: 7880
 keys:
-  LIVEKIT_API_KEY: p7LNKEBaHJiOeGmFen5GQXABglf71snm
-  LIVEKIT_API_SECRET: 6PErE43LHsDxfBwqGM8xZq4JZuTMxQnm
+  LIVEKIT_API_KEY: "p7LNKEBaHJiOeGmFen5GQXABglf71snm"
+  LIVEKIT_API_SECRET: "6PErE43LHsDxfBwqGM8xZq4JZuTMxQnm"
 rtc:
   port_range_start: 50000
   port_range_end: 60000

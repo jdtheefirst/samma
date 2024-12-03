@@ -12,11 +12,11 @@ const voteRouter = require("./routes/voteRouter");
 const donateRouter = require("./routes/donateRouter");
 const useTranslator = require("./routes/translateRouter");
 const downloadRouter = require("./routes/downloadRouter");
-const { protect } = require("./middleware/authMiddleware");
 
 const bodyParser = require("body-parser");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { initializeSocketIO } = require("./socket");
+const { limiter } = require("./middleware/limiter");
 
 dotenv.config({ path: "./secrets.env" });
 connectDB();
@@ -41,22 +41,42 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/generate-livekit-token", protect, async (req, res) => {
-  const { AccessToken } = await import("livekit-server-sdk");
+app.post("/api/generate-token", limiter, async (req, res) => {
+  try {
+    const { AccessToken } = await import("livekit-server-sdk");
 
-  const token = new AccessToken(
-    process.env.LIVEKIT_API_KEY,
-    process.env.LIVEKIT_API_SECRET,
-    {
-      identity: req.query.identity,
-      room: req.query.room,
-      ttl: 3600, // Token expiry time in seconds
+    const { identity, room } = req.query;
+
+    if (!identity || !room) {
+      console.error("Identity or room is missing from the request.");
+      return res.status(400).json({ error: "Identity and room are required" });
     }
-  );
-  token.addGrant({ roomJoin: true }); // Grant permissions, like joining rooms
 
-  const tokenJwt = token.toJwt();
-  res.json({ token: tokenJwt });
+    const token = new AccessToken(
+      process.env.LIVEKIT_API_KEY,
+      process.env.LIVEKIT_API_SECRET,
+      {
+        identity,
+        ttl: 3600, // Token expiry in seconds
+      }
+    );
+
+    // Add grant permissions
+    token.addGrant({ roomJoin: true, room });
+
+    // Generate JWT token
+    const tokenJwt = await token.toJwt();
+
+    // Explicit logging for debugging
+    console.log("Generated AccessToken Object:", token);
+    console.log("Generated JWT Token:", tokenJwt);
+
+    // Send the token to the frontend
+    res.json(tokenJwt);
+  } catch (error) {
+    console.error("Error generating token:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 // API routes
