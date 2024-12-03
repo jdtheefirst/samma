@@ -9,9 +9,6 @@ services:
     volumes:
       - ./config.yaml:/etc/livekit/config.yaml:ro
     restart: unless-stopped
-    environment:
-      - LIVEKIT_API_KEY=p7LNKEBaHJiOeGmFen5GQXABglf71s
-      - LIVEKIT_API_SECRET=6PErE43LHsDxfBwqGM8xZq4JZuTMxQ
 
   backend:
     build:
@@ -28,8 +25,8 @@ services:
       context: .
       dockerfile: Dockerfile.nginx
     ports:
-      - "8081:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     depends_on:
       - backend
       - livekit
