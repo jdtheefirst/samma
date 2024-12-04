@@ -60,10 +60,14 @@ app.post("/api/create-room", async (req, res) => {
     const token = await generateApiToken();
     console.log(token);
 
-    const room = await roomService.createRoom({
+    const room = {
       name: roomName,
-      emptyTimeout: 300, // Automatically close the room after 5 minutes of inactivity
-      maxParticipants: 10, // Set maximum participants
+      emptyTimeout: 300,
+      maxParticipants: 10,
+    };
+
+    roomService.createRoom(room).then((room) => {
+      console.log("room created", room);
     });
 
     res.status(200).json(room);
