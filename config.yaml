@@ -1,8 +1,9 @@
 port: 7880
 keys:
-  LIVEKIT_API_KEY: 2ExfMOsTW0AnGJp2bEugv8THYCAiU6w9nuLiFTMgQCQBDExitpk93M0L49dA0jLV
-  LIVEKIT_API_SECRET: sptBBQIg5uhcRl5IqEzZszu7QNq4ldmfUAwIHn8QwcvJ4yT9UI2cUXqYGvISIJqP
+  p7LNKEBaHJiOeGmFen5GQXABglf71snm: 6PErE43LHsDxfBwqGM8xZq4JZuTMxQnm
 rtc:
   port_range_start: 50000
   port_range_end: 60000
   tcp_port: 7881
+logging:
+  level: debug
