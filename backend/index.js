@@ -17,6 +17,7 @@ const bodyParser = require("body-parser");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { initializeSocketIO } = require("./socket");
 const { limiter } = require("./middleware/limiter");
+const { default: axios } = require("axios");
 
 dotenv.config({ path: "./secrets.env" });
 connectDB();
@@ -40,6 +41,51 @@ app.use((req, res, next) => {
   res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
+
+app.post("/api/create-room", async (req, res) => {
+  const { roomName } = req.body;
+
+  if (!roomName) {
+    return res.status(400).json({ error: "Room name is required" });
+  }
+
+  try {
+    const token = await generateApiToken();
+    const response = await axios.post(
+      `${process.env.LIVEKIT_SERVER_URL}room`,
+      {
+        name: roomName,
+        emptyTimeout: 300, // Automatically close the room after 5 minutes of inactivity
+        maxParticipants: 10, // Set maximum participants
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error creating room:", error);
+    res.status(500).json({ error: "Failed to create room" });
+  }
+});
+
+// Helper function to generate an API token for room creation
+async function generateApiToken() {
+  const { AccessToken } = await import("livekit-server-sdk");
+
+  const token = new AccessToken(
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET
+  );
+  token.addGrant({ roomCreate: true });
+  const tokenJwt = await token.toJwt();
+
+  return tokenJwt;
+}
 
 app.post("/api/generate-token", limiter, async (req, res) => {
   try {
@@ -66,10 +112,6 @@ app.post("/api/generate-token", limiter, async (req, res) => {
 
     // Generate JWT token
     const tokenJwt = await token.toJwt();
-
-    // Explicit logging for debugging
-    console.log("Generated AccessToken Object:", token);
-    console.log("Generated JWT Token:", tokenJwt);
 
     // Send the token to the frontend
     res.json(tokenJwt);

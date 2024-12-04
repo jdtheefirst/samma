@@ -45,7 +45,7 @@ const Streamer = () => {
     };
   }, []);
 
-  const getLiveKitTokenFromBackend = async () => {
+  const getLiveKitTokenFromBackend = async (roomName, userId) => {
     if (!user) {
       navigate("/dashboard");
 
@@ -60,8 +60,18 @@ const Streamer = () => {
     };
 
     try {
+      const createRoomResponse = await fetch("/api/create-room", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomName }),
+      });
+
+      if (!createRoomResponse.ok) {
+        throw new Error("Failed to create room");
+      }
+
       const { data } = await axios.post(
-        "/api/generate-token?identity=" + user.token + "&room=test-room",
+        "/api/generate-token?identity=" + userId + "&room=" + roomName,
         config
       );
       console.log(data);
@@ -97,7 +107,7 @@ const Streamer = () => {
   const initializeLiveKitForPublishing = async (stream) => {
     const roomUrl = "wss://test.worldsamma.org/livekit/";
     try {
-      const token = await getLiveKitTokenFromBackend();
+      const token = await getLiveKitTokenFromBackend("test-room", user._id);
       const room = new Room();
 
       // Connect to the room
