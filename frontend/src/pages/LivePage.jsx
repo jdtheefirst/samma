@@ -125,7 +125,9 @@ const Streamer = () => {
       room.localParticipant.publishTrack(localVideo);
 
       console.log("Streaming to LiveKit room...");
+      setConnected(true);
     } catch (error) {
+      setConnected(false);
       console.error("Error during LiveKit connection:", error);
     }
   };

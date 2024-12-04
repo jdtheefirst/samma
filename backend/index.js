@@ -17,7 +17,6 @@ const bodyParser = require("body-parser");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { initializeSocketIO } = require("./socket");
 const { limiter } = require("./middleware/limiter");
-const { default: axios } = require("axios");
 
 dotenv.config({ path: "./secrets.env" });
 connectDB();
@@ -45,32 +44,31 @@ app.use((req, res, next) => {
 app.post("/api/create-room", async (req, res) => {
   const { roomName } = req.body;
 
+  const { RoomServiceClient } = await import("livekit-server-sdk");
+
   if (!roomName) {
     return res.status(400).json({ error: "Room name is required" });
   }
+
+  const roomService = new RoomServiceClient(
+    process.env.LIVEKIT_SERVER_URL,
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET
+  );
 
   try {
     const token = await generateApiToken();
     console.log(token);
 
-    const response = await axios.post(
-      `${process.env.LIVEKIT_SERVER_URL}room/`,
-      {
-        name: roomName,
-        emptyTimeout: 300, // Automatically close the room after 5 minutes of inactivity
-        maxParticipants: 10, // Set maximum participants
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const room = await roomService.createRoom({
+      name: roomName,
+      emptyTimeout: 300, // Automatically close the room after 5 minutes of inactivity
+      maxParticipants: 10, // Set maximum participants
+    });
 
-    res.status(200).json(response.data);
+    res.status(200).json(room);
   } catch (error) {
-    console.error("Error creating room:", error.response);
+    console.error("Error creating room:", error);
     res.status(500).json({ error: "Failed to create room" });
   }
 });
