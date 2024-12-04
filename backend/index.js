@@ -51,8 +51,10 @@ app.post("/api/create-room", async (req, res) => {
 
   try {
     const token = await generateApiToken();
+    console.log(token);
+
     const response = await axios.post(
-      `${process.env.LIVEKIT_SERVER_URL}room`,
+      `${process.env.LIVEKIT_SERVER_URL}room/`,
       {
         name: roomName,
         emptyTimeout: 300, // Automatically close the room after 5 minutes of inactivity
@@ -68,7 +70,7 @@ app.post("/api/create-room", async (req, res) => {
 
     res.status(200).json(response.data);
   } catch (error) {
-    console.error("Error creating room:", error);
+    console.error("Error creating room:", error.response);
     res.status(500).json({ error: "Failed to create room" });
   }
 });
