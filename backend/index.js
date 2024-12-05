@@ -66,11 +66,12 @@ app.post("/api/create-room", async (req, res) => {
       maxParticipants: 10,
     };
 
-    roomService.createRoom(room).then((room) => {
+    await roomService.createRoom(room).then((room) => {
       console.log("room created", room);
     });
 
-    res.status(200).json(room);
+    res.status(200);
+    console.log("Everything went well.");
   } catch (error) {
     console.error("Error creating room:", error);
     res.status(500).json({ error: "Failed to create room" });
