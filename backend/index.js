@@ -49,35 +49,32 @@ app.post("/api/create-room", async (req, res) => {
   if (!roomName) {
     return res.status(400).json({ error: "Room name is required" });
   }
-
-  const roomService = new RoomServiceClient(
+  console.log(
     process.env.LIVEKIT_SERVER_URL,
     process.env.LIVEKIT_API_KEY,
     process.env.LIVEKIT_API_SECRET
   );
 
+  const roomService = new RoomServiceClient(
+    process.env.LIVEKIT_SERVER_URL, // Should point to https://test.worldsamma.org/http
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET
+  );
+
+  const room = {
+    name: roomName,
+    emptyTimeout: 300,
+    maxParticipants: 10,
+  };
+
   try {
-    const token = await generateApiToken();
-    console.log(token);
-
-    const room = {
-      name: roomName,
-      emptyTimeout: 300,
-      maxParticipants: 10,
-    };
-
-    await roomService.createRoom(room).then((room) => {
-      console.log("room created", room);
-    });
-
-    res.status(200);
-    console.log("Everything went well.");
+    const response = await roomService.createRoom(room);
+    console.log("Room created:", response);
   } catch (error) {
     console.error("Error creating room:", error);
     res.status(500).json({ error: "Failed to create room" });
   }
 });
-
 // Helper function to generate an API token for room creation
 async function generateApiToken() {
   const { AccessToken } = await import("livekit-server-sdk");
@@ -108,7 +105,7 @@ app.post("/api/generate-token", limiter, async (req, res) => {
       process.env.LIVEKIT_API_SECRET,
       {
         identity,
-        ttl: 3600, // Token expiry in seconds
+        ttl: "10m", // Token expiry in seconds
       }
     );
 
