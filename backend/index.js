@@ -49,45 +49,42 @@ app.post("/api/create-room", async (req, res) => {
   if (!roomName) {
     return res.status(400).json({ error: "Room name is required" });
   }
-  console.log(
+
+  const roomService = new RoomServiceClient(
     process.env.LIVEKIT_SERVER_URL,
     process.env.LIVEKIT_API_KEY,
     process.env.LIVEKIT_API_SECRET
   );
 
-  const roomService = new RoomServiceClient(
-    process.env.LIVEKIT_SERVER_URL, // Should point to https://test.worldsamma.org/http
-    process.env.LIVEKIT_API_KEY,
-    process.env.LIVEKIT_API_SECRET
-  );
-
-  const room = {
-    name: roomName,
-    emptyTimeout: 300,
-    maxParticipants: 10,
-  };
-
   try {
-    const response = await roomService.createRoom(room);
-    console.log("Room created:", response);
+    // Check if the room already exists
+    const rooms = await roomService.listRooms(); // Fetch all rooms
+    const existingRoom = rooms.find((room) => room.name === roomName);
+
+    if (existingRoom) {
+      console.log("Room already exists:", existingRoom);
+      return res
+        .status(200)
+        .json({ message: "Room already exists", room: existingRoom });
+    }
+
+    // If the room doesn't exist, create it
+    const newRoom = {
+      name: roomName,
+      emptyTimeout: 300,
+      maxParticipants: 10,
+    };
+    const createdRoom = await roomService.createRoom(newRoom);
+
+    console.log("Room created:", createdRoom);
+    return res
+      .status(201)
+      .json({ message: "Room created successfully", room: createdRoom });
   } catch (error) {
     console.error("Error creating room:", error);
-    res.status(500).json({ error: "Failed to create room" });
+    return res.status(500).json({ error: "Failed to create room" });
   }
 });
-// Helper function to generate an API token for room creation
-async function generateApiToken() {
-  const { AccessToken } = await import("livekit-server-sdk");
-
-  const token = new AccessToken(
-    process.env.LIVEKIT_API_KEY,
-    process.env.LIVEKIT_API_SECRET
-  );
-  token.addGrant({ roomCreate: true });
-  const tokenJwt = await token.toJwt();
-
-  return tokenJwt;
-}
 
 app.post("/api/generate-token", limiter, async (req, res) => {
   try {

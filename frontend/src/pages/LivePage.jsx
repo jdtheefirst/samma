@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { FaPlay, FaStop } from "react-icons/fa";
+import { FaPause, FaPlay, FaStop } from "react-icons/fa";
 import { Box, Flex, Heading, Text, Spinner } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
 import { LocalAudioTrack, LocalVideoTrack, Room } from "livekit-client";
@@ -48,30 +48,35 @@ const Streamer = () => {
   const getLiveKitTokenFromBackend = async (roomName, userId) => {
     if (!user) {
       navigate("/dashboard");
-
       return;
     }
 
     const config = {
       headers: {
-        "Content-type": "application/json",
+        "Content-Type": "application/json",
         Authorization: `Bearer ${user.token}`,
       },
     };
 
     try {
+      // Request to create or check the room
       const createRoomResponse = await fetch("/api/create-room", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roomName }),
       });
 
-      // if (!createRoomResponse.ok) {
-      //   throw new Error("Failed to create room");
-      // }
+      const createRoomData = await createRoomResponse.json();
 
+      if (!createRoomResponse.ok) {
+        throw new Error(createRoomData.error || "Failed to create room");
+      }
+
+      console.log(createRoomData.message); // "Room already exists" or "Room created successfully"
+
+      // Generate a token for the room
       const { data } = await axios.post(
-        "/api/generate-token?identity=" + userId + "&room=" + roomName,
+        `/api/generate-token?identity=${userId}&room=${roomName}`,
         config
       );
       console.log(data);
@@ -101,12 +106,11 @@ const Streamer = () => {
     }
 
     // Proceed with LiveKit initialization only when media is available
-    // initializeLiveKitForPublishing(stream);
-    getLiveKitTokenFromBackend("test-room", user._id);
+    initializeLiveKitForPublishing(stream);
   };
 
   const initializeLiveKitForPublishing = async (stream) => {
-    const roomUrl = "wss://test.worldsamma.org/livekit/";
+    const roomUrl = "wss://test.worldsamma.org";
     try {
       const token = await getLiveKitTokenFromBackend("test-room", user._id);
 
@@ -208,6 +212,7 @@ const Streamer = () => {
             colorScheme="green"
             size="lg"
             fontSize={"sm"}
+            isDisabled={streaming}
           >
             Start Streaming
           </Button>
