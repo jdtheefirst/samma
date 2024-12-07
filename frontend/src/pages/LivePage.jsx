@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaPause, FaPlay, FaStop } from "react-icons/fa";
-import { Box, Flex, Heading, Text, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, Spinner, useToast } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
 import { LocalAudioTrack, LocalVideoTrack, Room } from "livekit-client";
 import VideoPlayer from "../components/video";
 import UpperNav from "../miscellenious/upperNav";
-import axios from "axios";
 import { ChatState } from "../components/Context/ChatProvider";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +16,7 @@ const Streamer = () => {
   const roomRef = useRef(null);
   const { user } = ChatState();
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Local stream setup
   useEffect(() => {
@@ -45,43 +45,33 @@ const Streamer = () => {
     };
   }, []);
 
-  const getLiveKitTokenFromBackend = async (roomName, userId) => {
+  const getLiveKitTokenFromBackend = async (roomName, userId, role) => {
     if (!user) {
       navigate("/dashboard");
       return;
     }
-
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-    };
 
     try {
       // Request to create or check the room
       const createRoomResponse = await fetch("/api/create-room", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomName }),
+        body: JSON.stringify({ roomName, userId, role }),
       });
 
       const createRoomData = await createRoomResponse.json();
+      console.log(createRoomData.message, createRoomData.token, createRoomData);
+
+      toast({
+        title: createRoomData.message,
+        status: "info",
+      });
 
       if (!createRoomResponse.ok) {
         throw new Error(createRoomData.error || "Failed to create room");
       }
 
-      console.log(createRoomData.message); // "Room already exists" or "Room created successfully"
-
-      // Generate a token for the room
-      const { data } = await axios.post(
-        `/api/generate-token?identity=${userId}&room=${roomName}`,
-        config
-      );
-      console.log(data);
-
-      return data;
+      return createRoomData.token;
     } catch (error) {
       console.error(error);
     }
@@ -112,25 +102,47 @@ const Streamer = () => {
   const initializeLiveKitForPublishing = async (stream) => {
     const roomUrl = "wss://test.worldsamma.org";
     try {
-      const token = await getLiveKitTokenFromBackend("test-room", user._id);
+      console.log("Fetching token...");
+      const token = await getLiveKitTokenFromBackend(
+        "test-room",
+        user._id,
+        "publisher"
+      );
 
       if (!token) {
         throw new Error("Failed to generate token");
       }
+      console.log("Token received:", token);
 
       const room = new Room();
 
-      // Connect to the room
+      console.log("Connecting to room...");
       await room.connect(roomUrl, token);
 
       roomRef.current = room;
       setConnected(true);
+      console.log("Connected to room");
+
+      // Ensure valid stream tracks are available
+      if (
+        stream.getAudioTracks().length === 0 ||
+        stream.getVideoTracks().length === 0
+      ) {
+        throw new Error("Stream does not have valid audio or video tracks");
+      }
+
+      // Turns camera track on
+      room.localParticipant.setCameraEnabled(true);
+
+      // Turns microphone track on
+      room.localParticipant.setMicrophoneEnabled(true);
 
       // Local tracks
       const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
       const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
 
       // Publish local tracks to the room
+      console.log("Publishing tracks...");
       room.localParticipant.publishTrack(localAudio);
       room.localParticipant.publishTrack(localVideo);
 

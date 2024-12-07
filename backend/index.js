@@ -42,13 +42,9 @@ app.use((req, res, next) => {
 });
 
 app.post("/api/create-room", async (req, res) => {
-  const { roomName } = req.body;
+  const { roomName, userId, role } = req.body; // Include userId and role (publisher/subscriber)
 
   const { RoomServiceClient } = await import("livekit-server-sdk");
-
-  if (!roomName) {
-    return res.status(400).json({ error: "Room name is required" });
-  }
 
   const roomService = new RoomServiceClient(
     process.env.LIVEKIT_SERVER_URL,
@@ -56,69 +52,73 @@ app.post("/api/create-room", async (req, res) => {
     process.env.LIVEKIT_API_SECRET
   );
 
+  if (!roomName || !userId || !role) {
+    return res
+      .status(400)
+      .json({ error: "Room name, userId, and role are required" });
+  }
+
   try {
-    // Check if the room already exists
-    const rooms = await roomService.listRooms(); // Fetch all rooms
+    const rooms = await roomService.listRooms();
     const existingRoom = rooms.find((room) => room.name === roomName);
 
-    if (existingRoom) {
-      console.log("Room already exists:", existingRoom);
+    if (existingRoom && role === "publisher") {
       return res
-        .status(200)
-        .json({ message: "Room already exists", room: existingRoom });
+        .status(403)
+        .json({ message: "A publisher is already streaming in this room." });
     }
 
-    // If the room doesn't exist, create it
+    // If the room doesn't exist, create a new room
     const newRoom = {
       name: roomName,
-      emptyTimeout: 300,
-      maxParticipants: 10,
+      emptyTimeout: 60,
+      maxParticipants: 10000, // Allow up to 10,000 participants (adjust based on needs)
     };
-    const createdRoom = await roomService.createRoom(newRoom);
+    createdRoom = await roomService.createRoom(newRoom);
 
-    console.log("Room created:", createdRoom);
-    return res
-      .status(201)
-      .json({ message: "Room created successfully", room: createdRoom });
+    // Generate token for the user (publisher or subscriber)
+    const token = await generateLiveKitToken(roomName, userId, role);
+
+    return res.status(200).json({
+      message: "Room processed successfully",
+      room: createdRoom,
+      token,
+    });
   } catch (error) {
-    console.error("Error creating room:", error);
-    return res.status(500).json({ error: "Failed to create room" });
+    console.error("Error processing room:", error);
+    return res.status(500).json({ error: "Failed to process room" });
   }
 });
 
-app.post("/api/generate-token", limiter, async (req, res) => {
-  try {
-    const { AccessToken } = await import("livekit-server-sdk");
+async function generateLiveKitToken(roomName, userId, role) {
+  const { AccessToken } = await import("livekit-server-sdk");
 
-    const { identity, room } = req.query;
+  const identity = userId; // User's ID, or unique identifier
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+  const ttl = 10 * 60; // Token expires in 10 minutes
 
-    if (!identity || !room) {
-      console.error("Identity or room is missing from the request.");
-      return res.status(400).json({ error: "Identity and room are required" });
-    }
+  // Define permissions based on the role
+  const canPublish = role === "publisher";
+  const canSubscribe = role === "subscriber";
 
-    const token = new AccessToken(
-      process.env.LIVEKIT_API_KEY,
-      process.env.LIVEKIT_API_SECRET,
-      {
-        identity,
-        ttl: "10m", // Token expiry in seconds
-      }
-    );
+  // Create the AccessToken
+  const token = new AccessToken(apiKey, apiSecret, {
+    identity, // User identity
+    ttl, // Token time-to-live
+  });
 
-    // Add grant permissions
-    token.addGrant({ roomJoin: true, room });
+  // Add grants
+  token.addGrant({
+    roomJoin: true, // Allow joining the room
+    room: roomName, // Specify the room name
+    canPublish, // Allow publishing if role is "publisher"
+    canSubscribe, // Allow subscribing
+  });
 
-    // Generate JWT token
-    const tokenJwt = await token.toJwt();
-
-    // Send the token to the frontend
-    res.json(tokenJwt);
-  } catch (error) {
-    console.error("Error generating token:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+  // Return the token as JWT
+  return await token.toJwt();
+}
 
 // API routes
 app.use("/api/user", userRoutes);

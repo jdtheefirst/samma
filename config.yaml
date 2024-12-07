@@ -7,3 +7,4 @@ rtc:
   tcp_port: 7881
 logging:
   level: debug
+use_external_ip: true
