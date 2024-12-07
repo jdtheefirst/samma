@@ -12,8 +12,8 @@ turn:
   enabled: true
   udp_port: 3478
   tls_port: 5349
-  domain: turn.worldsamma.org
-  cert_file: /etc/livekit/certificates/fullchain.pem
-  key_file: /etc/livekit/certificates/privkey.pem
+  domain: livekit.worldsamma.org
+  cert_file: /etc/livekit/fullchain.pem
+  key_file: /etc/livekit/privkey.pem
   relay_range_start: 1024
   relay_range_end: 30000

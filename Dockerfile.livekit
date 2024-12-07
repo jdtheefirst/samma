@@ -4,16 +4,13 @@ FROM livekit/livekit-server:latest
 # Create a new system group and user for LiveKit
 RUN addgroup --system livekit && adduser --system --ingroup livekit livekit
 
-# Create the necessary directories
-RUN mkdir -p /etc/livekit/certificates && chown livekit:livekit /etc/livekit/certificates
-
 # Copy the config and SSL certificate files
 COPY config.yaml /etc/livekit/config.yaml
-COPY fullchain.pem /etc/livekit/certificates/fullchain.pem
-COPY privkey.pem /etc/livekit/certificates/privkey.pem
+COPY fullchain.pem /etc/livekit/fullchain.pem
+COPY privkey.pem /etc/livekit/privkey.pem
 
 # Ensure proper permissions for files
-RUN chmod 600 /etc/livekit/config.yaml /etc/livekit/certificates/fullchain.pem /etc/livekit/certificates/privkey.pem \
+RUN chmod 600 /etc/livekit/config.yaml /etc/livekit/fullchain.pem /etc/livekit/privkey.pem \
     && chown -R livekit:livekit /etc/livekit
 
 # Switch to the livekit user

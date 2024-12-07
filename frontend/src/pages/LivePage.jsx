@@ -100,7 +100,7 @@ const Streamer = () => {
   };
 
   const initializeLiveKitForPublishing = async (stream) => {
-    const roomUrl = "wss://test.worldsamma.org";
+    const roomUrl = "wss://test.worldsamma.org:7880";
     try {
       console.log("Fetching token...");
       const token = await getLiveKitTokenFromBackend(
@@ -131,20 +131,14 @@ const Streamer = () => {
         throw new Error("Stream does not have valid audio or video tracks");
       }
 
-      // Turns camera track on
-      room.localParticipant.setCameraEnabled(true);
-
-      // Turns microphone track on
-      room.localParticipant.setMicrophoneEnabled(true);
-
       // Local tracks
       const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
       const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
 
       // Publish local tracks to the room
       console.log("Publishing tracks...");
-      room.localParticipant.publishTrack(localAudio);
-      room.localParticipant.publishTrack(localVideo);
+      await room.localParticipant.publishTrack(localAudio);
+      await room.localParticipant.publishTrack(localVideo);
 
       console.log("Streaming to LiveKit room...");
       setConnected(true);
