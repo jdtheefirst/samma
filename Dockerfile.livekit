@@ -4,20 +4,19 @@ FROM livekit/livekit-server:latest
 # Create a new system group and user for LiveKit
 RUN addgroup --system livekit && adduser --system --ingroup livekit livekit
 
-# Create the directory for the key file if it doesn't exist
-RUN mkdir -p /etc/livekit && chown livekit:livekit /etc/livekit
+# Create the necessary directories
+RUN mkdir -p /etc/livekit/certificates && chown livekit:livekit /etc/livekit/certificates
 
-# Copy the key file into the container
+# Copy the config and SSL certificate files
 COPY config.yaml /etc/livekit/config.yaml
-
-# Copy SSL certificates
 COPY fullchain.pem /etc/livekit/certificates/fullchain.pem
 COPY privkey.pem /etc/livekit/certificates/privkey.pem
 
-# Set the appropriate permissions for the key file
-RUN chmod 600 /etc/livekit/config.yaml && chown livekit:livekit /etc/livekit/config.yaml
+# Ensure proper permissions for files
+RUN chmod 600 /etc/livekit/config.yaml /etc/livekit/certificates/fullchain.pem /etc/livekit/certificates/privkey.pem \
+    && chown -R livekit:livekit /etc/livekit
 
-# Switch to the livekit user to run the server with the correct privileges
+# Switch to the livekit user
 USER livekit
 
 # Set the entrypoint for the LiveKit server
