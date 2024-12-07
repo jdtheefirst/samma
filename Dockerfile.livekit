@@ -10,6 +10,10 @@ RUN mkdir -p /etc/livekit && chown livekit:livekit /etc/livekit
 # Copy the key file into the container
 COPY config.yaml /etc/livekit/config.yaml
 
+# Copy SSL certificates
+COPY fullchain.pem /etc/livekit/certificates/fullchain.pem
+COPY privkey.pem /etc/livekit/certificates/privkey.pem
+
 # Set the appropriate permissions for the key file
 RUN chmod 600 /etc/livekit/config.yaml && chown livekit:livekit /etc/livekit/config.yaml
 
