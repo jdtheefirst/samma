@@ -8,3 +8,6 @@ rtc:
   use_external_ip: true
 logging:
   level: debug
+tls:
+  cert_file: fullchain.pem
+  key_file: privkey.pem
