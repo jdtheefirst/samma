@@ -6,8 +6,8 @@ RUN addgroup --system livekit && adduser --system --ingroup livekit livekit
 
 # Copy the config and SSL certificate files
 COPY config.yaml /etc/livekit/config.yaml
-COPY fullchain.pem /etc/livekit/fullchain.pem
-COPY privkey.pem /etc/livekit/privkey.pem
+COPY livekit/fullchain.pem /etc/livekit/fullchain.pem
+COPY livekit/privkey.pem /etc/livekit/privkey.pem
 
 # Ensure proper permissions for files
 RUN chmod 600 /etc/livekit/config.yaml /etc/livekit/fullchain.pem /etc/livekit/privkey.pem \
