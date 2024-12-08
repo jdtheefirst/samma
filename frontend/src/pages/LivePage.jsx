@@ -100,7 +100,7 @@ const Streamer = () => {
   };
 
   const initializeLiveKitForPublishing = async (stream) => {
-    const roomUrl = "wss://test.worldsamma.org:7880";
+    const roomUrl = "wss://test.worldsamma.org:8443";
     try {
       console.log("Fetching token...");
       const token = await getLiveKitTokenFromBackend(
