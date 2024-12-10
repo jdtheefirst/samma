@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { FaPause, FaPlay, FaStop } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { FaPlay, FaStop } from "react-icons/fa";
 import { Box, Flex, Heading, Text, Spinner, useToast } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
 import { LocalAudioTrack, LocalVideoTrack, Room } from "livekit-client";
 import VideoPlayer from "../components/video";
 import UpperNav from "../miscellenious/upperNav";
 import { ChatState } from "../components/Context/ChatProvider";
+import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
 import { useNavigate } from "react-router-dom";
 
 const Streamer = () => {
@@ -45,38 +46,6 @@ const Streamer = () => {
     };
   }, []);
 
-  const getLiveKitTokenFromBackend = async (roomName, userId, role) => {
-    if (!user) {
-      navigate("/dashboard");
-      return;
-    }
-
-    try {
-      // Request to create or check the room
-      const createRoomResponse = await fetch("/api/create-room", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomName, userId, role }),
-      });
-
-      const createRoomData = await createRoomResponse.json();
-      console.log(createRoomData.message, createRoomData.token, createRoomData);
-
-      toast({
-        title: createRoomData.message,
-        status: "info",
-      });
-
-      if (!createRoomResponse.ok) {
-        throw new Error(createRoomData.error || "Failed to create room");
-      }
-
-      return createRoomData.token;
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const startStreaming = () => {
     setStreaming(true);
 
@@ -100,13 +69,15 @@ const Streamer = () => {
   };
 
   const initializeLiveKitForPublishing = async (stream) => {
-    const roomUrl = "wss://test.worldsamma.org:8443";
+    const roomUrl = "ws://test.worldsamma.org:7880";
     try {
       console.log("Fetching token...");
       const token = await getLiveKitTokenFromBackend(
         "test-room",
-        user._id,
-        "publisher"
+        user?._id,
+        "publisher",
+        toast,
+        navigate
       );
 
       if (!token) {

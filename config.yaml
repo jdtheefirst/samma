@@ -11,9 +11,8 @@ logging:
 turn:
   enabled: true
   udp_port: 3478
-  tls_port: 8443
-  domain: test.worldsamma.org
-  cert_file: /etc/livekit/fullchain.pem
-  key_file: /etc/livekit/privkey.pem
+  tls_port: 0
   relay_range_start: 1024
   relay_range_end: 30000
+  external_tls: true
+  domain: test.worldsamma.org

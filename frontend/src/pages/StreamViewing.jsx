@@ -1,21 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
-import "video.js/dist/video-js.css";
-import { Box, Heading, Text, Spinner, Stack, Image } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  Text,
+  Spinner,
+  Stack,
+  Image,
+  useToast,
+} from "@chakra-ui/react";
 import UpperNav from "../miscellenious/upperNav";
-import Janus from "janus-gateway";
+import {
+  Room,
+  RemoteTrackPublication,
+  RemoteParticipant,
+  Track,
+} from "livekit-client";
+import { useNavigate } from "react-router-dom";
 
 const LiveStream = () => {
   const videoRef = useRef(null);
-  const playerRef = useRef(null);
-  const janusRef = useRef(null);
-  const streamingPluginRef = useRef(null);
+  const roomRef = useRef(null);
 
   const [isLive, setIsLive] = useState(false);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeVideoId, setActiveVideoId] = useState(null);
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [participantCount, setParticipantCount] = useState(0);
 
   const API_KEY = process.env.REACT_APP_API_KEY;
+  const LIVEKIT_URL = "ws://test.worldsamma.org:7880"; // Replace with your LiveKit server URL
 
   // Fetch YouTube Playlist
   const fetchPlaylistVideos = async () => {
@@ -31,89 +46,65 @@ const LiveStream = () => {
     }
   };
 
-  const initializeJanusForViewing = () => {
-    Janus.init({
-      debug: "all",
-      callback: () => {
-        janusRef.current = new Janus({
-          server: "ws://test.worldsamma.org:8188", // Your Janus server URL
-          success: () => {
-            janusRef.current.attach({
-              plugin: "janus.plugin.videoroom", // Use the VideoRoom plugin for viewing
-              success: (pluginHandle) => {
-                streamingPluginRef.current = pluginHandle;
-                joinRoom(pluginHandle, 1234); // Use the same room ID created earlier for viewing
-              },
-              error: (err) => {
-                console.error("Error attaching plugin:", err);
-              },
-            });
-          },
-          error: (err) => {
-            console.error("Error initializing Janus Gateway:", err);
-          },
-        });
-      },
-    });
-  };
+  // Initialize LiveKit for viewing
+  const initializeLiveKit = async () => {
+    try {
+      const token = await getLiveKitTokenFromBackend(
+        "test-room",
+        user._id,
+        "subscriber",
+        toast,
+        navigate
+      );
 
-  const joinRoom = (plugin, janusRoomId) => {
-    plugin.send({
-      message: {
-        request: "join", // Join the room as a viewer
-        room: janusRoomId,
-        ptype: "viewer", // Specify that this is a viewer
-      },
-      success: (response) => {
-        console.log("Successfully joined the room:", response);
-
-        // If the stream is already started, get the JSEP (Session Description Protocol) offer
-        const { jsep } = response || {};
-        if (jsep) {
-          console.log("Received JSEP:", jsep);
-          plugin.createAnswer({
-            jsep, // Pass the JSEP from the server to create an answer
-            media: { audioSend: false, videoSend: false }, // Receive only video/audio (viewer)
-            success: (jsepAnswer) => {
-              plugin.send({
-                message: { request: "start" }, // Start viewing the stream
-                jsep: jsepAnswer,
-              });
-              console.log("Stream started successfully.");
-            },
-            error: (err) => {
-              console.error("Error creating WebRTC answer:", err);
-            },
-          });
-        } else {
-          console.warn(
-            "JSEP is missing. The stream might not have started yet."
-          );
-        }
-      },
-      error: (err) => {
-        console.error("Error joining room:", err);
-      },
-    });
-
-    // Listen for remote streams (admin's stream)
-    plugin.onremotestream = (stream) => {
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream; // Attach the received stream to the video element
-        setIsLive(true); // Set live status to true when stream starts
-        console.log("Remote stream started.");
+      if (!token) {
+        throw new Error("Failed to generate token");
       }
-    };
+
+      const room = new Room();
+      await room.connect(LIVEKIT_URL, token);
+
+      roomRef.current = room;
+
+      // Track participant count
+      const updateParticipantCount = () => {
+        setParticipantCount(room.participants.size + 1); // +1 includes local participant
+      };
+
+      // Initialize participant count
+      updateParticipantCount();
+
+      // Listen for participant events
+      room.on("participantConnected", updateParticipantCount);
+      room.on("participantDisconnected", updateParticipantCount);
+
+      // Subscribe to tracks
+      room.on("trackSubscribed", (track, publication, participant) => {
+        if (track.kind === Track.Kind.Video && videoRef.current) {
+          track.attach(videoRef.current);
+          setIsLive(true);
+        }
+      });
+
+      room.on("trackUnsubscribed", (track, publication, participant) => {
+        if (track.kind === Track.Kind.Video && videoRef.current) {
+          track.detach(videoRef.current);
+          setIsLive(false);
+        }
+      });
+    } catch (error) {
+      console.error("Error connecting to LiveKit:", error);
+    }
   };
 
-  // Initialize Video.js Player (if you are using it, otherwise, this could be removed)
+  // Cleanup LiveKit connection
   useEffect(() => {
-    initializeJanusForViewing();
+    initializeLiveKit();
+
     return () => {
-      if (janusRef.current) janusRef.current.destroy(); // Clean up the Janus connection
-      if (playerRef.current) {
-        playerRef.current.dispose(); // Dispose of Video.js player if you're using it
-        playerRef.current = null;
+      if (roomRef.current) {
+        roomRef.current.disconnect();
+        roomRef.current = null;
       }
     };
   }, []);
@@ -149,11 +140,11 @@ const LiveStream = () => {
           <Box data-vjs-player mb={6}>
             <video
               ref={videoRef}
-              className="video-js vjs-default-skin"
               autoPlay
               controls
               aria-label="Live Stream Player"
             />
+            <Text fontSize={"sm"}>{participantCount}</Text>
           </Box>
         ) : (
           <Text>No Live Stream Available</Text>

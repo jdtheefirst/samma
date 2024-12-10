@@ -39,7 +39,6 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "countries-list": "^3.0.6",
-    "janus-gateway": "^1.2.4",
     "livekit-client": "^2.7.0",
     "process": "^0.11.10",
     "react": "^18.2.0",

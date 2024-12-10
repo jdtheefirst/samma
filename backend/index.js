@@ -68,6 +68,14 @@ app.post("/api/create-room", async (req, res) => {
         .json({ message: "A publisher is already streaming in this room." });
     }
 
+    if (existingRoom && role === "subscriber") {
+      const token = await generateLiveKitToken(roomName, userId, role);
+      return res.json({
+        message: "Generated token",
+        token,
+      });
+    }
+
     // If the room doesn't exist, create a new room
     const newRoom = {
       name: roomName,

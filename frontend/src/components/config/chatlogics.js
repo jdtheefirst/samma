@@ -243,3 +243,40 @@ export async function handleApprove(accountType, type, user, setUser) {
     throw new Error("Error occurred", error);
   }
 }
+
+export const getLiveKitTokenFromBackend = async (
+  roomName,
+  userId,
+  role,
+  toast,
+  navigate
+) => {
+  if (!user) {
+    navigate("/dashboard");
+    return;
+  }
+
+  try {
+    // Request to create or check the room
+    const createRoomResponse = await fetch("/api/create-room", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomName, userId, role }),
+    });
+
+    const createRoomData = await createRoomResponse.json();
+
+    toast({
+      title: createRoomData.message,
+      status: "info",
+    });
+
+    if (!createRoomResponse.ok) {
+      throw new Error(createRoomData.error || "Failed to create room");
+    }
+
+    return createRoomData.token;
+  } catch (error) {
+    console.error(error);
+  }
+};
