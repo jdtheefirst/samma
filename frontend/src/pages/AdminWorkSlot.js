@@ -256,6 +256,7 @@ const AdminWorkSlot = () => {
             border={"none"}
             fontSize={"sm"}
             borderRadius={"full"}
+            isDisabled
           >
             Join Meeting &nbsp;{" "}
             <MdOutlineMeetingRoom color="red" cursor="pointer" />

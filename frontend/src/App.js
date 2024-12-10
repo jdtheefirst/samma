@@ -338,10 +338,10 @@ function App() {
             path="/stream"
             element={<DelayedRender Component={StreamViewPage} />}
           />
-          <Route
+          {/* <Route
             path="/meeting"
             element={<DelayedRender Component={MeetingComponent} />}
-          />
+          /> */}
           <Route path="/clubs" element={<DelayedRender Component={Clubs} />} />
           <Route
             path="/courses/:id/submit/:title"

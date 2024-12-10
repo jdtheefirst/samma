@@ -251,7 +251,7 @@ export const getLiveKitTokenFromBackend = async (
   toast,
   navigate
 ) => {
-  if (!user) {
+  if (!userId) {
     navigate("/dashboard");
     return;
   }
