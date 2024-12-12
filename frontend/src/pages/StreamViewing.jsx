@@ -8,7 +8,6 @@ import {
   useToast,
   Button,
 } from "@chakra-ui/react";
-// import "@livekit/components-styles";
 import UpperNav from "../miscellenious/upperNav";
 import { useNavigate } from "react-router-dom";
 import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
@@ -26,6 +25,7 @@ const LiveStream = () => {
   const API_KEY = process.env.REACT_APP_API_KEY;
   const LIVEKIT_URL = "wss://test.worldsamma.org"; // Replace with your LiveKit server URL
   const [token, setToken] = useState("");
+  const VideoRef = useRef(null);
 
   // Fetch YouTube Playlist
   const fetchPlaylistVideos = async () => {
@@ -60,13 +60,27 @@ const LiveStream = () => {
 
   const connectToRoom = async (token) => {
     try {
-      const room = await Room.connect(LIVEKIT_URL, token);
+      const room = new Room();
+
+      await room.connect(LIVEKIT_URL, token);
       roomRef.current = room;
 
+      console.log("Connected!");
+
       room.on("trackSubscribed", (track, publication, participant) => {
-        // When a track is subscribed, attach the video track to the video element
-        if (track instanceof VideoTrack && videoRef.current) {
-          videoRef.current.srcObject = track.mediaStream;
+        console.log("Track subscribed:", track);
+
+        // Attach video track to the video element
+        if (track instanceof VideoTrack && VideoRef.current) {
+          // Attach the track to the video element
+          const mediaStream = track.mediaStreamTrack
+            ? new MediaStream([track.mediaStreamTrack])
+            : track.mediaStream;
+
+          VideoRef.current.srcObject = mediaStream;
+          VideoRef.current.play().catch((err) => {
+            console.error("Error playing video:", err);
+          });
         }
       });
 
@@ -76,6 +90,20 @@ const LiveStream = () => {
 
       room.on("participantDisconnected", (participant) => {
         console.log("Participant disconnected:", participant.identity);
+
+        // Detach video track if needed
+        if (VideoRef.current && VideoRef.current.srcObject) {
+          VideoRef.current.srcObject = null;
+        }
+      });
+
+      room.on("trackUnsubscribed", (track, publication, participant) => {
+        console.log("Track unsubscribed:", track);
+
+        // Detach video track if needed
+        if (VideoRef.current && VideoRef.current.srcObject) {
+          VideoRef.current.srcObject = null;
+        }
       });
     } catch (error) {
       console.error("Error connecting to room:", error);
@@ -91,6 +119,12 @@ const LiveStream = () => {
     if (token) {
       connectToRoom(token);
     }
+    return () => {
+      // Detach video track if needed
+      if (VideoRef.current && VideoRef.current.srcObject) {
+        VideoRef.current.srcObject = null;
+      }
+    };
   }, [token]);
 
   // Cleanup LiveKit connection
@@ -115,16 +149,16 @@ const LiveStream = () => {
           Live Stream
         </Heading>
 
-        <Box textAlign="center" py={10}>
+        <Box
+          display={"flex"}
+          flexDirection={"column"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          textAlign="center"
+          py={10}
+        >
           {token ? (
-            <>
-              <Text fontSize="xl" mb={4}>
-                Live Video Stream
-              </Text>
-              <Box width="80%" maxWidth="720px">
-                <VideoPlayer localVideoRef={VideoRef} />
-              </Box>
-            </>
+            <VideoPlayer localVideoRef={VideoRef} />
           ) : (
             <Box>
               <Text fontSize={"sm"}>No live video is currently available.</Text>
