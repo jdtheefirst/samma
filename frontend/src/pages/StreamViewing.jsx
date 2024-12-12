@@ -1,36 +1,32 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Heading,
   Text,
-  Spinner,
   Stack,
   Image,
   useToast,
+  Button,
 } from "@chakra-ui/react";
+import { LiveKitRoom, VideoConference } from "@livekit/components-react";
+// import "@livekit/components-styles";
 import UpperNav from "../miscellenious/upperNav";
-import {
-  Room,
-  RemoteTrackPublication,
-  RemoteParticipant,
-  Track,
-} from "livekit-client";
 import { useNavigate } from "react-router-dom";
+import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
+import { ChatState } from "../components/Context/ChatProvider";
+import { Room } from "livekit-client";
+import VideoPlayer from "../components/video";
 
 const LiveStream = () => {
-  const videoRef = useRef(null);
   const roomRef = useRef(null);
-
-  const [isLive, setIsLive] = useState(false);
   const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeVideoId, setActiveVideoId] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
-  const [participantCount, setParticipantCount] = useState(0);
-
+  const { user } = ChatState();
   const API_KEY = process.env.REACT_APP_API_KEY;
-  const LIVEKIT_URL = "ws://test.worldsamma.org:7880"; // Replace with your LiveKit server URL
+  const LIVEKIT_URL = "wss://test.worldsamma.org"; // Replace with your LiveKit server URL
+  const [token, setToken] = useState("");
 
   // Fetch YouTube Playlist
   const fetchPlaylistVideos = async () => {
@@ -46,77 +42,62 @@ const LiveStream = () => {
     }
   };
 
-  // Initialize LiveKit for viewing
+  // Initialize LiveKit
   const initializeLiveKit = async () => {
     try {
-      const token = await getLiveKitTokenFromBackend(
+      const liveKitToken = await getLiveKitTokenFromBackend(
         "test-room",
-        user._id,
+        user?._id,
         "subscriber",
         toast,
         navigate
       );
-
-      if (!token) {
-        throw new Error("Failed to generate token");
-      }
-
-      const room = new Room();
-      await room.connect(LIVEKIT_URL, token);
-
-      roomRef.current = room;
-
-      // Track participant count
-      const updateParticipantCount = () => {
-        setParticipantCount(room.participants.size + 1); // +1 includes local participant
-      };
-
-      // Initialize participant count
-      updateParticipantCount();
-
-      // Listen for participant events
-      room.on("participantConnected", updateParticipantCount);
-      room.on("participantDisconnected", updateParticipantCount);
-
-      // Subscribe to tracks
-      room.on("trackSubscribed", (track, publication, participant) => {
-        if (track.kind === Track.Kind.Video && videoRef.current) {
-          track.attach(videoRef.current);
-          setIsLive(true);
-        }
-      });
-
-      room.on("trackUnsubscribed", (track, publication, participant) => {
-        if (track.kind === Track.Kind.Video && videoRef.current) {
-          track.detach(videoRef.current);
-          setIsLive(false);
-        }
-      });
+      if (!liveKitToken) throw new Error("Failed to generate LiveKit token");
+      setToken(liveKitToken);
     } catch (error) {
       console.error("Error connecting to LiveKit:", error);
     }
   };
 
+  const connectToRoom = async (token) => {
+    try {
+      const room = await Room.connect(LIVEKIT_URL, token);
+      roomRef.current = room;
+
+      room.on("trackSubscribed", (track, publication, participant) => {
+        // When a track is subscribed, attach the video track to the video element
+        if (track instanceof VideoTrack && videoRef.current) {
+          videoRef.current.srcObject = track.mediaStream;
+        }
+      });
+
+      room.on("participantConnected", (participant) => {
+        console.log("Participant connected:", participant.identity);
+      });
+
+      room.on("participantDisconnected", (participant) => {
+        console.log("Participant disconnected:", participant.identity);
+      });
+    } catch (error) {
+      console.error("Error connecting to room:", error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to LiveKit Room.",
+        status: "error",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      connectToRoom(token);
+    }
+  }, [token]);
+
   // Cleanup LiveKit connection
   useEffect(() => {
     initializeLiveKit();
-
-    return () => {
-      if (roomRef.current) {
-        roomRef.current.disconnect();
-        roomRef.current = null;
-      }
-    };
-  }, []);
-
-  // Fetch Playlist Data on Mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await fetchPlaylistVideos();
-      setLoading(false);
-    };
-    fetchData();
+    fetchPlaylistVideos();
   }, []);
 
   return (
@@ -124,32 +105,40 @@ const LiveStream = () => {
       display="flex"
       flexDirection="column"
       alignItems="center"
+      justifyContent={"start"}
       width="100%"
       fontFamily="Arial, sans-serif"
       color="gray.800"
     >
       <UpperNav />
-      <Box>
+      <Box marginTop={20}>
         <Heading as="h1" mb={4}>
           Live Stream
         </Heading>
 
-        {loading ? (
-          <Spinner size="xl" />
-        ) : isLive ? (
-          <Box data-vjs-player mb={6}>
-            <video
-              ref={videoRef}
-              autoPlay
-              controls
-              aria-label="Live Stream Player"
-            />
-            <Text fontSize={"sm"}>{participantCount}</Text>
-          </Box>
-        ) : (
-          <Text>No Live Stream Available</Text>
-        )}
-
+        <Box textAlign="center" py={10}>
+          {token ? (
+            <>
+              <Text fontSize="xl" mb={4}>
+                Live Video Stream
+              </Text>
+              <Box width="80%" maxWidth="720px">
+                <VideoPlayer localVideoRef={VideoRef} />
+              </Box>
+            </>
+          ) : (
+            <Box>
+              <Text fontSize={"sm"}>No live video is currently available.</Text>
+              <Button
+                mt={4}
+                colorScheme="teal"
+                onClick={() => window.location.reload()}
+              >
+                Retry Connection
+              </Button>
+            </Box>
+          )}
+        </Box>
         <Box>
           <Heading as="h2" mb={4}>
             Playlist

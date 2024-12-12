@@ -321,9 +321,18 @@ function App() {
             path="/dashboard"
             element={<DelayedRender Component={Dashboard} courses={courses} />}
           />
-          <Route path="/admin" element={<AdminWorkSlot />} />
-          <Route path="/live" element={<Streamer />} />
-          <Route path="/streams" element={<StreamViewPage />} />
+          <Route
+            path="/admin"
+            element={<DelayedRender Component={AdminWorkSlot} />}
+          />
+          <Route
+            path="/live"
+            element={<DelayedRender Component={Streamer} />}
+          />
+          <Route
+            path="/streams"
+            element={<DelayedRender Component={StreamViewPage} />}
+          />
           <Route
             path="/courses/:id"
             element={
@@ -334,10 +343,10 @@ function App() {
             path="/championships"
             element={<DelayedRender Component={Championships} />}
           />
-          <Route
+          {/* <Route
             path="/stream"
             element={<DelayedRender Component={StreamViewPage} />}
-          />
+          /> */}
           {/* <Route
             path="/meeting"
             element={<DelayedRender Component={MeetingComponent} />}

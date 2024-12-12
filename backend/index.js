@@ -41,7 +41,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/create-room", async (req, res) => {
+app.post("/api/create-room", limiter, async (req, res) => {
   const { roomName, userId, role } = req.body; // Include userId and role (publisher/subscriber)
 
   const { RoomServiceClient } = await import("livekit-server-sdk");
@@ -62,13 +62,36 @@ app.post("/api/create-room", async (req, res) => {
     const rooms = await roomService.listRooms();
     const existingRoom = rooms.find((room) => room.name === roomName);
 
+    if (!existingRoom && role === "publisher") {
+      // No room exists, allow the publisher to create the room
+      const newRoom = {
+        name: roomName,
+        emptyTimeout: 60,
+        maxParticipants: 10000,
+      };
+      const createdRoom = await roomService.createRoom(newRoom);
+
+      const token = await generateLiveKitToken(roomName, userId, role);
+      return res.status(200).json({
+        message: "Room created successfully",
+        room: createdRoom,
+        token,
+      });
+    }
+
     if (existingRoom && role === "publisher") {
-      return res
-        .status(403)
-        .json({ message: "A publisher is already streaming in this room." });
+      // Room exists and a publisher is trying to join, deny the request
+      const roomName = "test-room"; // Name of the room to delete
+
+      // Attempt to delete the room
+      await roomService.deleteRoom(roomName);
+      return res.status(403).json({
+        message: "A publisher is already streaming in this room, room deleted!",
+      });
     }
 
     if (existingRoom && role === "subscriber") {
+      // Room exists and a subscriber is trying to join, allow it
       const token = await generateLiveKitToken(roomName, userId, role);
       return res.json({
         message: "Generated token",
@@ -76,22 +99,12 @@ app.post("/api/create-room", async (req, res) => {
       });
     }
 
-    // If the room doesn't exist, create a new room
-    const newRoom = {
-      name: roomName,
-      emptyTimeout: 60,
-      maxParticipants: 10000, // Allow up to 10,000 participants (adjust based on needs)
-    };
-    createdRoom = await roomService.createRoom(newRoom);
-
-    // Generate token for the user (publisher or subscriber)
-    const token = await generateLiveKitToken(roomName, userId, role);
-
-    return res.status(200).json({
-      message: "Room processed successfully",
-      room: createdRoom,
-      token,
-    });
+    if (!existingRoom && role === "subscriber") {
+      // No room exists and a subscriber is trying to join, deny the request
+      return res.status(403).json({
+        message: "Live streaming hasn't started",
+      });
+    }
   } catch (error) {
     console.error("Error processing room:", error);
     return res.status(500).json({ error: "Failed to process room" });
@@ -107,8 +120,8 @@ async function generateLiveKitToken(roomName, userId, role) {
   const ttl = 10 * 60; // Token expires in 10 minutes
 
   // Define permissions based on the role
-  const canPublish = role === "publisher";
-  const canSubscribe = role === "subscriber";
+  const canPublish = (await role) === "publisher";
+  const canSubscribe = (await role) === "subscriber";
 
   // Create the AccessToken
   const token = new AccessToken(apiKey, apiSecret, {

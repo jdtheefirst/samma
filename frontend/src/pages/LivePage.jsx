@@ -3,19 +3,17 @@ import { FaPlay, FaStop } from "react-icons/fa";
 import { Box, Flex, Heading, Text, Spinner, useToast } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
 import { LocalAudioTrack, LocalVideoTrack, Room } from "livekit-client";
-import VideoPlayer from "../components/video";
 import UpperNav from "../miscellenious/upperNav";
-import { ChatState } from "../components/Context/ChatProvider";
 import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
 import { useNavigate } from "react-router-dom";
+import VideoPlayer from "../components/video";
 
-const Streamer = () => {
+const Streamer = ({ user }) => {
   const [streaming, setStreaming] = useState(false);
   const [connected, setConnected] = useState(false);
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
   const roomRef = useRef(null);
-  const { user } = ChatState();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -42,6 +40,10 @@ const Streamer = () => {
     return () => {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      if (roomRef.current) {
+        roomRef.current.disconnect();
+        roomRef.current = null;
       }
     };
   }, []);

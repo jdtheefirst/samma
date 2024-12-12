@@ -1,7 +1,12 @@
-import React, { useState } from "react";
-import { FormControl, FormLabel, Input, useToast } from "@chakra-ui/react";
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 
-const UploadPicture = ({ setPicLoading, color, setPic }) => {
+const UploadPicture = ({ setPicLoading, color, setPic, error, loading }) => {
   const toast = useToast();
 
   const handleFileChange = (event) => {
@@ -29,6 +34,7 @@ const UploadPicture = ({ setPicLoading, color, setPic }) => {
         })
         .catch((err) => {
           setPicLoading(false);
+          console.log(err);
         });
     } else {
       setPicLoading(false);
@@ -42,7 +48,9 @@ const UploadPicture = ({ setPicLoading, color, setPic }) => {
 
   return (
     <FormControl id="pic">
-      <FormLabel textColor={color} fontSize="small">Upload your Passport Photo</FormLabel>
+      <FormLabel textColor={color} fontSize="small">
+        Upload your Passport Photo
+      </FormLabel>
       <Input
         type="file"
         p={1.5}
@@ -51,7 +59,13 @@ const UploadPicture = ({ setPicLoading, color, setPic }) => {
         placeholder="Select a passport photo"
         accept="image/*"
         onChange={handleFileChange}
+        isDisabled={loading}
       />
+      {error && (
+        <Text color="red" fontSize={"smaller"}>
+          {error}
+        </Text>
+      )}
     </FormControl>
   );
 };

@@ -2,7 +2,7 @@ import { Button } from "@chakra-ui/button";
 import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { Box, VStack } from "@chakra-ui/layout";
-import { Radio, RadioGroup, Stack, Text, Select } from "@chakra-ui/react";
+import { Radio, RadioGroup, Stack, Text, Select, Flex } from "@chakra-ui/react";
 import { useToast } from "@chakra-ui/toast";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -22,10 +22,9 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [confirmPassword, setConfirmpassword] = useState("");
   const [password, setPassword] = useState("");
-  const [pic, setPic] = useState(undefined);
+  const [pic, setPic] = useState("");
   const [picLoading, setPicLoading] = useState(false);
   const [gender, setGender] = useState("");
-  const [disabled, setDisabled] = useState(false);
   const [otherName, setOtherName] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [provinces, setProvinces] = useState("");
@@ -44,36 +43,6 @@ const Signup = () => {
   }));
 
   const submitHandler = async () => {
-    console.log(
-      name,
-      email,
-      password,
-      confirmPassword,
-      gender,
-      selectedCountry,
-      otherName,
-      provinces,
-      passport,
-      pic,
-      language
-    );
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !passport ||
-      !gender ||
-      !selectedCountry ||
-      !otherName ||
-      !language
-      // !pic
-    ) {
-      toast({
-        title: "Please fill all the required fields.",
-        status: "warning",
-      });
-      return;
-    }
     setPicLoading(true);
     try {
       const config = {
@@ -96,15 +65,15 @@ const Signup = () => {
         language,
       };
 
-      const result = await UserFormValidation.safeParse(formData);
+      const result = UserFormValidation.safeParse(formData);
 
       // Handle validation result
       if (!result.success) {
         // If validation fails, set errors
         const fieldErrors = result.error.format();
         setErrors(fieldErrors);
+        setPicLoading(false);
       } else {
-        // If validation passes, proceed with form submission logic
         console.log("Form data is valid:", result.data);
         const { data } = await axios.post(
           "/api/user/post",
@@ -120,7 +89,6 @@ const Signup = () => {
       console.log(error);
       toast({
         title: "Error Occurred!",
-
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -141,13 +109,13 @@ const Signup = () => {
 
   return (
     <VStack spacing="5px">
-      <Box mb={"6"} fontWeight={"bold"} textAlign={"center"} width={"100%"}>
+      <Flex direction={"column"} align={"center"} mb={"6"} width={"100%"}>
         <h1>Hello there!</h1>
-        <p>
+        <Text fontWeight={"semibold"}>
           Enter your personal details and start your journey with us. Your
           information is used solely for certification purposes
-        </p>
-      </Box>
+        </Text>
+      </Flex>
       <FormControl id="first-name" isRequired>
         <FormLabel fontSize="small">First name</FormLabel>
         <Input
@@ -156,7 +124,11 @@ const Signup = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        {errors.name && <Text color="red">{errors.name._errors[0]}</Text>}
+        {errors.name && (
+          <Text color="red" fontSize={"smaller"}>
+            {errors.name._errors[0]}
+          </Text>
+        )}
       </FormControl>
 
       <FormControl id="other-name" isRequired>
@@ -168,7 +140,9 @@ const Signup = () => {
           onChange={(e) => setOtherName(e.target.value)}
         />
         {errors.otherName && (
-          <Text color="red">{errors.otherName._errors[0]}</Text>
+          <Text color="red" fontSize={"smaller"}>
+            {errors.otherName._errors[0]}
+          </Text>
         )}
       </FormControl>
       <FormControl id="email" isRequired>
@@ -196,7 +170,11 @@ const Signup = () => {
         ) : (
           ""
         )}
-        {errors.email && <Text color="red">{errors.email._errors[0]}</Text>}
+        {errors.email && (
+          <Text color="red" fontSize={"smaller"}>
+            {errors.email._errors[0]}
+          </Text>
+        )}
       </FormControl>
       <FormControl id="password" isRequired>
         <FormLabel fontSize="small">Password</FormLabel>
@@ -216,7 +194,9 @@ const Signup = () => {
           </InputRightElement>
         </InputGroup>
         {errors.password && (
-          <Text color="red">{errors.password._errors[0]}</Text>
+          <Text color="red" fontSize={"smaller"}>
+            {errors.password._errors[0]}
+          </Text>
         )}
       </FormControl>
       <FormControl id="password-confirm" isRequired>
@@ -237,7 +217,9 @@ const Signup = () => {
           </InputRightElement>
         </InputGroup>
         {errors.confirmPassword && (
-          <Text color="red">{errors.confirmPassword._errors[0]}</Text>
+          <Text color="red" fontSize={"smaller"}>
+            {errors.confirmPassword._errors[0]}
+          </Text>
         )}
       </FormControl>
       <FormControl id="id/passport" isRequired>
@@ -250,7 +232,9 @@ const Signup = () => {
           onChange={(e) => setPassport(e.target.value)}
         />
         {errors.passport && (
-          <Text color="red">{errors.passport._errors[0]}</Text>
+          <Text color="red" fontSize={"smaller"}>
+            {errors.passport._errors[0]}
+          </Text>
         )}
       </FormControl>
       <FormControl id="country" isRequired>
@@ -275,6 +259,11 @@ const Signup = () => {
             </option>
           ))}
         </Select>
+        {errors.selectedCountry && (
+          <Text color="red" fontSize={"smaller"}>
+            {errors.selectedCountry._errors[0]}
+          </Text>
+        )}
       </FormControl>
       {selectedCountry && subdivisions.length > 0 ? (
         <FormControl id="provinces" isRequired>
@@ -326,6 +315,11 @@ const Signup = () => {
             </option>
           ))}
         </Select>
+        {errors.language && (
+          <Text color="red" fontSize={"smaller"}>
+            {errors.language._errors[0]}
+          </Text>
+        )}
       </FormControl>
       <FormControl id="gender" isRequired>
         <FormLabel fontSize="small">Gender</FormLabel>
@@ -336,8 +330,18 @@ const Signup = () => {
             <Radio value="other">Other</Radio>
           </Stack>
         </RadioGroup>
+        {errors.gender && (
+          <Text color="red" fontSize={"smaller"}>
+            {errors.gender._errors[0]}
+          </Text>
+        )}
       </FormControl>
-      <UploadPicture setPic={setPic} setPicLoading={setPicLoading} />
+      <UploadPicture
+        setPic={setPic}
+        setPicLoading={setPicLoading}
+        error={errors.pic?._errors[0]}
+        loading={picLoading}
+      />
 
       <Button
         colorScheme="blue"
@@ -345,11 +349,10 @@ const Signup = () => {
         style={{ marginTop: 15 }}
         onClick={() => submitHandler()}
         isLoading={picLoading}
-        isDisabled={disabled}
         fontSize="small"
         border={"none"}
       >
-        <Text> {disabled ? `Try Again after 30sec` : `Sign Up`} </Text>
+        Sign Up
       </Button>
     </VStack>
   );

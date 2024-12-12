@@ -26,7 +26,7 @@ import { GrUserAdmin } from "react-icons/gr";
 import { MdLiveTv, MdOutlineMeetingRoom } from "react-icons/md";
 import AnimatedLetters from "../components/wsf";
 
-const AdminWorkSlot = () => {
+const AdminWorkSlot = ({ user }) => {
   const [submissions, setSubmissions] = useState([]);
   const [reject, setReject] = useState(false);
   const [approaved, setApproaved] = useState(false);
@@ -38,7 +38,7 @@ const AdminWorkSlot = () => {
   const [message, setMessage] = useState("");
   const toast = useToast();
   const navigate = useNavigate();
-  const { setMessages, user } = ChatState();
+  const { setMessages } = ChatState();
 
   const handleReject = (submissionId, passport, video) => {
     console.log(`Rejected submission with ID: ${submissionId}`);

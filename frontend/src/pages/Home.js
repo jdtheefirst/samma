@@ -14,15 +14,14 @@ import {
   LinkOverlay,
   LinkBox,
   Spinner,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import ErrorBoundary from "../components/ErrorBoundary";
 import "../App.css";
 import Logins from "./Logins";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo1 from "../assets/images/final.jpeg";
-import logo2 from "../assets/images/finalLogo2.jpeg";
+import logo1 from "../assets/images/final_sauna.jpg";
+import logo3 from "../assets/images/finalLogo5.jpg";
 import logo7 from "../assets/images/reduced.jpg";
 import logo9 from "../assets/images/sammahouse.jpeg";
 import logo10 from "../assets/images/Equity.png";
@@ -141,7 +140,7 @@ function Homepage() {
             </strong>
             {"\u00A0"} All-In-One Martial Art
           </Text>
-          <FaRocket className="rocket-animation" size={20} />
+
           <Menu>
             <MenuButton
               as={IconButton}
@@ -190,7 +189,7 @@ function Homepage() {
                 background="transparent"
                 border={"none"}
               >
-                Get Started
+                Login
               </MenuItem>
             </MenuList>
           </Menu>
@@ -233,7 +232,7 @@ function Homepage() {
             WORLD SAMMA FEDERATION
           </Text>
           <Image
-            src={logo2}
+            src={logo3}
             boxSize={{ base: "60px", md: "120px" }}
             width={{ base: "70px", md: "140px" }}
             alt={`Logo 2*`}
@@ -388,7 +387,8 @@ function Homepage() {
                 alignItems={"center"}
                 flexDirection={"column"}
                 width={"100%"}
-                p={6}
+                p={4}
+                mt={"2"}
                 bg={"whitesmoke"}
               >
                 <LinkBox
@@ -400,8 +400,9 @@ function Homepage() {
                   background={"green"}
                   textAlign={"center"}
                   textColor={"white"}
-                  p={"2"}
                   border={"3px solid black"}
+                  pt={2}
+                  pb={2}
                   onClick={handleDownload}
                 >
                   <LinkOverlay
@@ -412,11 +413,11 @@ function Homepage() {
                     href="https://res.cloudinary.com/dsdlgmgwi/image/upload/v1730722401/sammaV5.pdf"
                     target="_blank"
                     download
-                    fontSize={"xl"}
+                    fontSize={{ base: "md", md: "xl" }}
                     fontWeight={"bold"}
                   >
                     <RxDownload />
-                    <Text pl={"4"}>Download Samma Book V5</Text>
+                    <Text pl={"2"}>Download Samma Book V5</Text>
                   </LinkOverlay>
                 </LinkBox>
                 <Box

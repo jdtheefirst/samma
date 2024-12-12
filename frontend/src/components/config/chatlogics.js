@@ -16,13 +16,13 @@ export const UserFormValidation = z.object({
   gender: z.enum(["male", "female", "other"]),
   password: z
     .string()
-    .min(4, "Password must be at least 8 characters long")
+    .min(4, "Password must be at least 4 characters long")
     .max(100, "Password must be at most 100 characters"),
   confirmPassword: z
     .string()
-    .min(4, "Confirm password must be at least 8 characters long")
+    .min(4, "Confirm password must be at least 4 characters long")
     .max(100, "Confirm password must be at most 100 characters")
-    .refine((val, ctx) => val === ctx.parent.password, {
+    .refine((val, ctx) => val === ctx, {
       message: "Passwords do not match",
     }),
   passport: z.string().regex(/^\d{8,15}$/, "Invalid passport/ID number"),

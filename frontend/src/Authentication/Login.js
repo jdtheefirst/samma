@@ -19,6 +19,7 @@ import {
   ModalFooter,
   Divider,
   Spinner,
+  Flex,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import GoogleLoginButton from "./Google";
@@ -64,7 +65,7 @@ const Login = () => {
         { email, password },
         config
       );
-      await localStorage.setItem("userInfo", JSON.stringify(data));
+      localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);
       navigate("/dashboard");
     } catch (error) {
@@ -132,10 +133,12 @@ const Login = () => {
 
   return (
     <VStack spacing="5px">
-      <Box mb={"6"} fontWeight={"bold"}>
+      <Flex direction={"column"} align={"center"} mb={"6"} width={"100%"}>
         <h1>Welcome Back!</h1>
-        <p>To keep connected with us please login with your personal info</p>
-      </Box>
+        <Text fontWeight={"semibold"}>
+          To keep connected with us please login with your personal info
+        </Text>
+      </Flex>
       <FormControl id="email-login" isRequired>
         <FormLabel fontSize={"small"}>Email address/Code</FormLabel>
         <Input
