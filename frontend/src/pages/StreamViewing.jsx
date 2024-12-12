@@ -8,7 +8,6 @@ import {
   useToast,
   Button,
 } from "@chakra-ui/react";
-import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 // import "@livekit/components-styles";
 import UpperNav from "../miscellenious/upperNav";
 import { useNavigate } from "react-router-dom";
