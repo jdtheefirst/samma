@@ -23,7 +23,7 @@ const Streamer = ({ user }) => {
       try {
         // Get the local media stream (audio + video)
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 1280, height: 720, frameRate: 30 },
+          video: { width: 640, height: 480, frameRate: 15 },
           audio: true,
         });
 
@@ -76,7 +76,7 @@ const Streamer = ({ user }) => {
       console.log("Fetching token...");
       const token = await getLiveKitTokenFromBackend(
         "test-room",
-        user?._id,
+        user?.name,
         "publisher",
         toast,
         navigate
@@ -94,24 +94,19 @@ const Streamer = ({ user }) => {
 
       roomRef.current = room;
       setConnected(true);
-      console.log("Connected to room");
-
-      // Ensure valid stream tracks are available
-      if (
-        stream.getAudioTracks().length === 0 ||
-        stream.getVideoTracks().length === 0
-      ) {
-        throw new Error("Stream does not have valid audio or video tracks");
-      }
-
-      // Local tracks
-      const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
-      const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
 
       // Publish local tracks to the room
-      console.log("Publishing tracks...");
-      await room.localParticipant.publishTrack(localAudio);
-      await room.localParticipant.publishTrack(localVideo);
+      if (
+        stream.getAudioTracks().length > 0 &&
+        stream.getVideoTracks().length > 0
+      ) {
+        const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
+        const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
+        await room.localParticipant.publishTrack(localAudio);
+        await room.localParticipant.publishTrack(localVideo);
+      } else {
+        throw new Error("Stream does not have valid audio or video tracks");
+      }
 
       console.log("Streaming to LiveKit room...");
       setConnected(true);

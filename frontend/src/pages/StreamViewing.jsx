@@ -7,42 +7,15 @@ import { Track } from "livekit-client";
 import { useTracks, LiveKitRoom, VideoTrack } from "@livekit/components-react";
 
 const IncomingStream = () => {
-  // Subscribe to all video tracks from the room
-  const tracks = useTracks([Track.Source.Camera], {
+  const cameraTracks = useTracks([Track.Source.Camera], {
     onlySubscribed: true,
   });
-
-  console.log(tracks);
-
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      width="100%"
-      bg="gray.100"
-      p={4}
-    >
-      {tracks.length > 0 ? (
-        tracks.map((trackReference, index) => (
-          <Box
-            key={index}
-            mb={4}
-            borderRadius="md"
-            overflow="hidden"
-            boxShadow="lg"
-            bg="black"
-          >
-            <VideoTrack trackRef={trackReference} />
-          </Box>
-        ))
-      ) : (
-        <Text fontSize="lg" color="gray.600">
-          Waiting for video stream...
-        </Text>
-      )}
-    </Box>
+    <>
+      {cameraTracks.map((trackReference) => {
+        return <VideoTrack {...trackReference} />;
+      })}
+    </>
   );
 };
 
@@ -77,7 +50,7 @@ const LiveStream = ({ user }) => {
     try {
       const liveKitToken = await getLiveKitTokenFromBackend(
         "test-room",
-        user?._id,
+        user?.name,
         "subscriber",
         toast,
         navigate
