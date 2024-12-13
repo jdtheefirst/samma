@@ -12,11 +12,11 @@ import UpperNav from "../miscellenious/upperNav";
 import { useNavigate } from "react-router-dom";
 import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
 import { ChatState } from "../components/Context/ChatProvider";
-import { Room } from "livekit-client";
-import VideoPlayer from "../components/video";
+import { Room, Track } from "livekit-client";
+import { useTracks, VideoTrack, LiveKitRoom } from "@livekit/components-react";
 
 const LiveStream = () => {
-  const roomRef = useRef(null);
+  // const roomRef = useRef(null);
   const [videos, setVideos] = useState([]);
   const [activeVideoId, setActiveVideoId] = useState(null);
   const navigate = useNavigate();
@@ -25,7 +25,10 @@ const LiveStream = () => {
   const API_KEY = process.env.REACT_APP_API_KEY;
   const LIVEKIT_URL = "wss://test.worldsamma.org"; // Replace with your LiveKit server URL
   const [token, setToken] = useState("");
-  const VideoRef = useRef(null);
+  // const VideoRef = useRef(null);
+  const cameraTracks = useTracks([Track.Source.Camera], {
+    onlySubscribed: true,
+  });
 
   // Fetch YouTube Playlist
   const fetchPlaylistVideos = async () => {
@@ -58,74 +61,74 @@ const LiveStream = () => {
     }
   };
 
-  const connectToRoom = async (token) => {
-    try {
-      const room = new Room();
+  // const connectToRoom = async (token) => {
+  //   try {
+  //     const room = new Room();
 
-      await room.connect(LIVEKIT_URL, token);
-      roomRef.current = room;
+  //     await room.connect(LIVEKIT_URL, token);
+  //     roomRef.current = room;
 
-      console.log("Connected!");
+  //     console.log("Connected!");
 
-      room.on("trackSubscribed", (track, publication, participant) => {
-        console.log("Track subscribed:", track);
+  //     room.on("trackSubscribed", (track, publication, participant) => {
+  //       console.log("Track subscribed:", track);
 
-        // Attach video track to the video element
-        if (track instanceof VideoTrack && VideoRef.current) {
-          // Attach the track to the video element
-          const mediaStream = track.mediaStreamTrack
-            ? new MediaStream([track.mediaStreamTrack])
-            : track.mediaStream;
+  //       // Attach video track to the video element
+  //       if (track instanceof VideoTrack && VideoRef.current) {
+  //         // Attach the track to the video element
+  //         const mediaStream = track.mediaStreamTrack
+  //           ? new MediaStream([track.mediaStreamTrack])
+  //           : track.mediaStream;
 
-          VideoRef.current.srcObject = mediaStream;
-          VideoRef.current.play().catch((err) => {
-            console.error("Error playing video:", err);
-          });
-        }
-      });
+  //         VideoRef.current.srcObject = mediaStream;
+  //         VideoRef.current.play().catch((err) => {
+  //           console.error("Error playing video:", err);
+  //         });
+  //       }
+  //     });
 
-      room.on("participantConnected", (participant) => {
-        console.log("Participant connected:", participant.identity);
-      });
+  //     room.on("participantConnected", (participant) => {
+  //       console.log("Participant connected:", participant.identity);
+  //     });
 
-      room.on("participantDisconnected", (participant) => {
-        console.log("Participant disconnected:", participant.identity);
+  //     room.on("participantDisconnected", (participant) => {
+  //       console.log("Participant disconnected:", participant.identity);
 
-        // Detach video track if needed
-        if (VideoRef.current && VideoRef.current.srcObject) {
-          VideoRef.current.srcObject = null;
-        }
-      });
+  //       // Detach video track if needed
+  //       if (VideoRef.current && VideoRef.current.srcObject) {
+  //         VideoRef.current.srcObject = null;
+  //       }
+  //     });
 
-      room.on("trackUnsubscribed", (track, publication, participant) => {
-        console.log("Track unsubscribed:", track);
+  //     room.on("trackUnsubscribed", (track, publication, participant) => {
+  //       console.log("Track unsubscribed:", track);
 
-        // Detach video track if needed
-        if (VideoRef.current && VideoRef.current.srcObject) {
-          VideoRef.current.srcObject = null;
-        }
-      });
-    } catch (error) {
-      console.error("Error connecting to room:", error);
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to LiveKit Room.",
-        status: "error",
-      });
-    }
-  };
+  //       // Detach video track if needed
+  //       if (VideoRef.current && VideoRef.current.srcObject) {
+  //         VideoRef.current.srcObject = null;
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error("Error connecting to room:", error);
+  //     toast({
+  //       title: "Connection Failed",
+  //       description: "Failed to connect to LiveKit Room.",
+  //       status: "error",
+  //     });
+  //   }
+  // };
 
-  useEffect(() => {
-    if (token) {
-      connectToRoom(token);
-    }
-    return () => {
-      // Detach video track if needed
-      if (VideoRef.current && VideoRef.current.srcObject) {
-        VideoRef.current.srcObject = null;
-      }
-    };
-  }, [token]);
+  // useEffect(() => {
+  //   if (token) {
+  //     connectToRoom(token);
+  //   }
+  //   return () => {
+  //     // Detach video track if needed
+  //     if (VideoRef.current && VideoRef.current.srcObject) {
+  //       VideoRef.current.srcObject = null;
+  //     }
+  //   };
+  // }, [token]);
 
   // Cleanup LiveKit connection
   useEffect(() => {
@@ -144,7 +147,7 @@ const LiveStream = () => {
       color="gray.800"
     >
       <UpperNav />
-      <Box marginTop={20}>
+      <Box marginTop={20} width={"100%"}>
         <Heading as="h1" mb={4}>
           Live Stream
         </Heading>
@@ -155,10 +158,15 @@ const LiveStream = () => {
           justifyContent={"center"}
           alignItems={"center"}
           textAlign="center"
+          width={"100%"}
           py={10}
         >
           {token ? (
-            <VideoPlayer localVideoRef={VideoRef} />
+            <LiveKitRoom url={LIVEKIT_URL} token={token}>
+              {cameraTracks.map((trackReference, index) => (
+                <VideoTrack key={index} {...trackReference} />
+              ))}
+            </LiveKitRoom>
           ) : (
             <Box>
               <Text fontSize={"sm"}>No live video is currently available.</Text>
