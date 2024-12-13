@@ -37,11 +37,9 @@ const MyComponent = () => {
 };
 
 const LiveStream = ({ user }) => {
-  const LIVEKIT_URL = "wss://test.worldsamma.org"; // Replace with your LiveKit server URL
   const [token, setToken] = useState("");
   const navigate = useNavigate();
   const toast = useToast();
-  const [error, setError] = useState(false);
   const [videos, setVideos] = useState([]);
   const [activeVideoId, setActiveVideoId] = useState(null);
   const API_KEY = process.env.REACT_APP_API_KEY;
@@ -78,7 +76,6 @@ const LiveStream = ({ user }) => {
       setToken(liveKitToken);
     } catch (error) {
       console.error("Error connecting to LiveKit:", error);
-      setError(true);
     }
   };
 
@@ -103,35 +100,27 @@ const LiveStream = ({ user }) => {
     >
       <UpperNav />
 
-      <Box width={"100%"} mb={"4"} mt={20}>
+      <Box width={"100%"} textAlign={"center"} mb={"4"} mt={20}>
         <Heading as="h1" mb={4}>
           Live Stream
         </Heading>
       </Box>
 
-      {error ? (
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent={"center"}
-          width="100%"
-          fontFamily="Arial, sans-serif"
-          mb={"4"}
-        >
-          <Text>Failed to initialize live stream. Please try again later.</Text>
-          <Button onClick={initializeLiveKit} colorScheme="teal">
-            Retry
-          </Button>
-        </Box>
-      ) : token ? (
-        <LiveKitRoom url={LIVEKIT_URL} token={token}>
+      {token ? (
+        <LiveKitRoom url={"wss://test.worldsamma.org"} token={token}>
           <MyComponent />
         </LiveKitRoom>
       ) : (
-        <Text textAlign={"center"}>Initializing live stream...</Text>
+        <>
+          <Text textAlign={"center"} mb={"4"}>
+            Generating token...
+          </Text>
+          <Text textAlign={"center"} mb={"6"}>
+            Initializing live stream...
+          </Text>
+        </>
       )}
-      <Box>
+      <Box textAlign={"center"}>
         <Heading as="h2" mb={4}>
           Playlist
         </Heading>
