@@ -119,7 +119,7 @@ const LiveStream = ({ user }) => {
 
       {token ? (
         <LiveKitRoom
-          serverUrl={serverUrl}
+          serverUrl={process.env.REACT_APP_LIVEKIT_URL}
           token={token}
           connect={true}
           onConnected={() => console.log("Connected to LiveKit")}
