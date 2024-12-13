@@ -99,7 +99,11 @@ const LiveStream = ({ user }) => {
       </Box>
 
       {token ? (
-        <LiveKitRoom url={process.env.REACT_APP_LIVEKIT_URL}>
+        <LiveKitRoom
+          serverUrl={process.env.REACT_APP_LIVEKIT_URL}
+          token={token}
+          connect={true}
+        >
           <MyComponent />
         </LiveKitRoom>
       ) : (
@@ -112,6 +116,7 @@ const LiveStream = ({ user }) => {
           </Text>
         </>
       )}
+
       <Box textAlign={"center"}>
         <Heading as="h2" mb={4}>
           Playlist
