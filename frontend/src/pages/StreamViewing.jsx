@@ -97,17 +97,28 @@ const LiveStream = ({ user }) => {
       width="100%"
       fontFamily="Arial, sans-serif"
       color="gray.800"
+      minH={"100vh"}
+      overflow={"auto"}
+      p={"6"}
     >
       <UpperNav />
 
-      <Box width={"100%"} mb={"4"}>
+      <Box width={"100%"} mb={"4"} mt={20}>
         <Heading as="h1" mb={4}>
           Live Stream
         </Heading>
       </Box>
 
       {error ? (
-        <Box mb={"4"}>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent={"center"}
+          width="100%"
+          fontFamily="Arial, sans-serif"
+          mb={"4"}
+        >
           <Text>Failed to initialize live stream. Please try again later.</Text>
           <Button onClick={initializeLiveKit} colorScheme="teal">
             Retry
@@ -118,7 +129,7 @@ const LiveStream = ({ user }) => {
           <MyComponent />
         </LiveKitRoom>
       ) : (
-        <Text>Initializing live stream...</Text>
+        <Text textAlign={"center"}>Initializing live stream...</Text>
       )}
       <Box>
         <Heading as="h2" mb={4}>
@@ -136,14 +147,16 @@ const LiveStream = ({ user }) => {
                 borderRadius="md"
                 display="flex"
                 flexDirection={{ base: "column", md: "row" }}
+                alignItems={"center"}
+                width="100%"
+                fontFamily="Arial, sans-serif"
                 gap={4}
                 _hover={{ bg: "gray.100" }}
               >
-                <Box width={{ base: "100%", md: "60%" }}>
+                <Box>
                   {activeVideoId === video.snippet.resourceId.videoId ? (
                     <Box
                       as="iframe"
-                      width="100%"
                       height="180px"
                       src={`https://www.youtube.com/embed/${video.snippet.resourceId.videoId}?autoplay=1`}
                       frameBorder="0"
@@ -165,7 +178,7 @@ const LiveStream = ({ user }) => {
                     />
                   )}
                 </Box>
-                <Box width={{ base: "100%", md: "40%" }}>
+                <Box textAlign={{ base: "center", md: "start" }}>
                   <Text fontWeight="bold">{video.snippet.title}</Text>
                   <Text fontSize="sm" noOfLines={2}>
                     {video.snippet.description}
