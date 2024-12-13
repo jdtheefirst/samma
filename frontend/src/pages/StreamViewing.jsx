@@ -21,7 +21,6 @@ const IncomingStream = () => {
       justifyContent="center"
       alignItems="center"
       width="100%"
-      height="100vh"
       bg="gray.100"
       p={4}
     >
@@ -119,8 +118,8 @@ const LiveStream = ({ user }) => {
 
       {token ? (
         <LiveKitRoom
-          serverUrl={process.env.REACT_APP_LIVEKIT_URL}
           token={token}
+          serverUrl={process.env.REACT_APP_LIVEKIT_URL}
           connect={true}
           onConnected={() => console.log("Connected to LiveKit")}
           onDisconnected={() => console.log("Disconnected from LiveKit")}
