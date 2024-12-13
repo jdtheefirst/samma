@@ -1,13 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  Box,
-  Heading,
-  Text,
-  Stack,
-  Image,
-  useToast,
-  Button,
-} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { Box, Heading, Text, Stack, Image, useToast } from "@chakra-ui/react";
 import UpperNav from "../miscellenious/upperNav";
 import { useNavigate } from "react-router-dom";
 import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
@@ -107,7 +99,7 @@ const LiveStream = ({ user }) => {
       </Box>
 
       {token ? (
-        <LiveKitRoom url={"wss://test.worldsamma.org"} token={token}>
+        <LiveKitRoom url={process.env.REACT_APP_LIVEKIT_URL}>
           <MyComponent />
         </LiveKitRoom>
       ) : (
