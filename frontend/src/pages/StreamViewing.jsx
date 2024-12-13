@@ -4,26 +4,45 @@ import UpperNav from "../miscellenious/upperNav";
 import { useNavigate } from "react-router-dom";
 import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
 import { Track } from "livekit-client";
-import { useTracks, VideoTrack, LiveKitRoom } from "@livekit/components-react";
+import { useTracks, LiveKitRoom, VideoTrack } from "@livekit/components-react";
 
-const MyComponent = () => {
-  const cameraTracks = useTracks([Track.Source.Camera], {
+const IncomingStream = () => {
+  // Subscribe to all video tracks from the room
+  const tracks = useTracks([Track.Source.Camera], {
     onlySubscribed: true,
   });
 
-  // Fetch YouTube Playlist
+  console.log(tracks);
 
   return (
     <Box
-      display={"flex"}
-      flexDirection={"column"}
-      justifyContent={"center"}
-      alignItems={"center"}
-      width={"100%"}
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      width="100%"
+      height="100vh"
+      bg="gray.100"
+      p={4}
     >
-      {cameraTracks.map((trackReference, index) => (
-        <VideoTrack key={index} {...trackReference} />
-      ))}
+      {tracks.length > 0 ? (
+        tracks.map((trackReference, index) => (
+          <Box
+            key={index}
+            mb={4}
+            borderRadius="md"
+            overflow="hidden"
+            boxShadow="lg"
+            bg="black"
+          >
+            <VideoTrack trackRef={trackReference} />
+          </Box>
+        ))
+      ) : (
+        <Text fontSize="lg" color="gray.600">
+          Waiting for video stream...
+        </Text>
+      )}
     </Box>
   );
 };
@@ -100,21 +119,18 @@ const LiveStream = ({ user }) => {
 
       {token ? (
         <LiveKitRoom
-          serverUrl={process.env.REACT_APP_LIVEKIT_URL}
+          serverUrl={serverUrl}
           token={token}
           connect={true}
+          onConnected={() => console.log("Connected to LiveKit")}
+          onDisconnected={() => console.log("Disconnected from LiveKit")}
         >
-          <MyComponent />
+          <IncomingStream />
         </LiveKitRoom>
       ) : (
-        <>
-          <Text textAlign={"center"} mb={"4"}>
-            Generating token...
-          </Text>
-          <Text textAlign={"center"} mb={"6"}>
-            Initializing live stream...
-          </Text>
-        </>
+        <Text fontSize="lg" color="gray.600" textAlign="center" mt={6}>
+          Generating token and initializing stream...
+        </Text>
       )}
 
       <Box textAlign={"center"}>
