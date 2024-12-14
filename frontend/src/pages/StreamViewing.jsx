@@ -10,6 +10,9 @@ const IncomingStream = () => {
   const cameraTracks = useTracks([Track.Source.Camera], {
     onlySubscribed: true,
   });
+
+  console.log(cameraTracks);
+
   return (
     <>
       {cameraTracks.map((trackReference) => {

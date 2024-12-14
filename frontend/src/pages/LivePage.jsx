@@ -50,21 +50,24 @@ const Streamer = ({ user }) => {
       roomRef.current = room;
       setConnected(true);
 
-      const videoTrack = await createLocalVideoTrack();
+      const videoTrack = await createLocalVideoTrack({
+        video: {
+          width: 160,
+          height: 120,
+          facingMode: "user",
+        },
+      });
       const audioTrack = await createLocalAudioTrack();
 
-      if (videoTrack) {
-        console.log("Publishing video track...");
-        await room.localParticipant.publishTrack(videoTrack);
-        // Attach video track to video element
-        if (localVideoRef.current) {
-          videoTrack.attach(localVideoRef.current);
-        }
+      console.log("Publishing video track...");
+      await room.localParticipant.publishTrack(videoTrack);
+
+      if (localVideoRef.current) {
+        videoTrack.attach(localVideoRef.current);
       }
-      if (audioTrack) {
-        console.log("Publishing audio track...");
-        await room.localParticipant.publishTrack(audioTrack);
-      }
+
+      console.log("Publishing audio track...");
+      await room.localParticipant.publishTrack(audioTrack);
 
       console.log("Streaming to LiveKit room...");
     } catch (error) {
