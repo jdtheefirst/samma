@@ -1,11 +1,4 @@
-import {
-  Box,
-  Flex,
-  Text,
-  Button,
-  Link,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, Button, Link } from "@chakra-ui/react";
 
 import Paycheck from "./Payments";
 import { GiBlackBelt } from "react-icons/gi";
@@ -29,7 +22,7 @@ const MyPrograms = ({ courses, user }) => {
     `black`,
   ];
   return (
-    <Box 
+    <Box
       display={"flex"}
       flexDir={"column"}
       alignItems={"center"}
@@ -89,16 +82,8 @@ const MyPrograms = ({ courses, user }) => {
               alignItems={"center"}
             >
               <Paycheck course={course} />
-              <Text
-                fontSize={"sm"}
-                fontWeight={400}
-                bg={useColorModeValue("green.50", "green.900")}
-                p={3}
-                px={3}
-                color={"green.500"}
-                rounded={"full"}
-              >
-                $12.00 only
+              <Text fontSize={"sm"} px={3} color={"green.500"} rounded={"full"}>
+                $5 only
               </Text>
             </Box>
           )}

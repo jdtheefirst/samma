@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaPlay, FaStop } from "react-icons/fa";
 import { Box, Flex, Heading, Text, Spinner, useToast } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/button";
-import { LocalAudioTrack, LocalVideoTrack, Room } from "livekit-client";
+import {
+  createLocalAudioTrack,
+  createLocalVideoTrack,
+  Room,
+} from "livekit-client";
 import UpperNav from "../miscellenious/upperNav";
 import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
 import { useNavigate } from "react-router-dom";
@@ -12,65 +16,16 @@ const Streamer = ({ user }) => {
   const [streaming, setStreaming] = useState(false);
   const [connected, setConnected] = useState(false);
   const localVideoRef = useRef(null);
-  const localStreamRef = useRef(null);
   const roomRef = useRef(null);
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Local stream setup
-  useEffect(() => {
-    const setupLocalStream = async () => {
-      try {
-        // Get the local media stream (audio + video)
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, frameRate: 15 },
-          audio: true,
-        });
-
-        // Display local video in the browser
-        localVideoRef.current.srcObject = stream;
-        localStreamRef.current = stream;
-      } catch (error) {
-        console.error("Error initializing local stream:", error);
-      }
-    };
-
-    setupLocalStream();
-
-    return () => {
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (roomRef.current) {
-        roomRef.current.disconnect();
-        roomRef.current = null;
-      }
-    };
-  }, []);
-
   const startStreaming = () => {
     setStreaming(true);
-
-    if (!localStreamRef.current) {
-      console.error("Local stream is not available.");
-      return;
-    }
-
-    // Ensure media tracks are available
-    const stream = localStreamRef.current;
-    const videoTrack = stream.getVideoTracks()[0];
-    const audioTrack = stream.getAudioTracks()[0];
-
-    if (!videoTrack || !audioTrack) {
-      console.error("Video or audio track is missing.");
-      return;
-    }
-
-    // Proceed with LiveKit initialization only when media is available
-    initializeLiveKitForPublishing(stream);
+    initializeLiveKitForPublishing();
   };
 
-  const initializeLiveKitForPublishing = async (stream) => {
+  const initializeLiveKitForPublishing = async () => {
     const roomUrl = "wss://test.worldsamma.org";
     try {
       console.log("Fetching token...");
@@ -87,7 +42,7 @@ const Streamer = ({ user }) => {
       }
       console.log("Token received:", token);
 
-      const room = new Room();
+      const room = new Room({ adaptiveStream: true });
 
       console.log("Connecting to room...");
       await room.connect(roomUrl, token);
@@ -95,34 +50,51 @@ const Streamer = ({ user }) => {
       roomRef.current = room;
       setConnected(true);
 
-      // Publish local tracks to the room
-      if (
-        stream.getAudioTracks().length > 0 &&
-        stream.getVideoTracks().length > 0
-      ) {
-        const localAudio = new LocalAudioTrack(stream.getAudioTracks()[0]);
-        const localVideo = new LocalVideoTrack(stream.getVideoTracks()[0]);
-        await room.localParticipant.publishTrack(localAudio);
-        await room.localParticipant.publishTrack(localVideo);
-      } else {
-        throw new Error("Stream does not have valid audio or video tracks");
+      const videoTrack = await createLocalVideoTrack();
+      const audioTrack = await createLocalAudioTrack();
+
+      if (videoTrack) {
+        console.log("Publishing video track...");
+        await room.localParticipant.publishTrack(videoTrack);
+        // Attach video track to video element
+        if (localVideoRef.current) {
+          videoTrack.attach(localVideoRef.current);
+        }
+      }
+      if (audioTrack) {
+        console.log("Publishing audio track...");
+        await room.localParticipant.publishTrack(audioTrack);
       }
 
       console.log("Streaming to LiveKit room...");
-      setConnected(true);
     } catch (error) {
       setConnected(false);
       console.error("Error during LiveKit connection:", error);
     }
   };
 
-  const stopStreaming = () => {
+  const stopStreaming = async () => {
     setConnected(false);
     setStreaming(false);
     if (roomRef.current) {
-      roomRef.current.disconnect();
+      try {
+        // Disable camera and microphone before disconnecting
+        await roomRef.current.localParticipant.setCameraEnabled(false);
+        await roomRef.current.localParticipant.setMicrophoneEnabled(false);
+
+        // Disconnect the room after disabling the tracks
+        roomRef.current.disconnect();
+      } catch (error) {
+        console.error("Error while stopping the stream:", error);
+      }
     }
   };
+
+  useEffect(() => {
+    return async () => {
+      await stopStreaming();
+    };
+  }, []);
 
   return (
     <Box
