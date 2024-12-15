@@ -48,26 +48,32 @@ const Streamer = ({ user }) => {
       await room.connect(roomUrl, token);
 
       roomRef.current = room;
+
+      // Turns camera track on
+      room.localParticipant.setCameraEnabled(true);
+
+      // Turns microphone track on
+      room.localParticipant.setMicrophoneEnabled(true);
       setConnected(true);
 
-      const videoTrack = await createLocalVideoTrack({
-        video: {
-          width: 160,
-          height: 120,
-          facingMode: "user",
-        },
-      });
-      const audioTrack = await createLocalAudioTrack();
+      // const videoTrack = await createLocalVideoTrack({
+      //   video: {
+      //     width: 160,
+      //     height: 120,
+      //     facingMode: "user",
+      //   },
+      // });
+      // const audioTrack = await createLocalAudioTrack();
 
-      console.log("Publishing video track...");
-      await room.localParticipant.publishTrack(videoTrack);
+      // console.log("Publishing video track...");
+      // await room.localParticipant.publishTrack(videoTrack);
 
-      if (localVideoRef.current) {
-        videoTrack.attach(localVideoRef.current);
-      }
+      // if (localVideoRef.current) {
+      //   videoTrack.attach(localVideoRef.current);
+      // }
 
-      console.log("Publishing audio track...");
-      await room.localParticipant.publishTrack(audioTrack);
+      // console.log("Publishing audio track...");
+      // await room.localParticipant.publishTrack(audioTrack);
 
       console.log("Streaming to LiveKit room...");
     } catch (error) {

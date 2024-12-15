@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 });
 
 app.post("/api/create-room", limiter, async (req, res) => {
-  const { roomName, userId, role } = req.body; // Include userId and role (publisher/subscriber)
+  const { roomName, userId, role } = req.body;
 
   const { RoomServiceClient } = await import("livekit-server-sdk");
 
