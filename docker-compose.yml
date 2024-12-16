@@ -6,10 +6,10 @@ services:
     ports:
       - "7880:7880"
       - "7881:7881"
-      # - "3478:3478/udp"
-      # - "3478:3478/tcp"
-      # - "50000-60000:50000-60000/udp"
-      # - "1024-30000:1024-30000/udp"
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "50000-60000:50000-60000/udp"
+      - "1024-30000:1024-30000/udp"
     volumes:
       - ./config.yaml:/etc/livekit/config.yaml:ro
     restart: unless-stopped
