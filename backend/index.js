@@ -114,27 +114,26 @@ app.post("/api/create-room", limiter, async (req, res) => {
 async function generateLiveKitToken(roomName, userId, role) {
   const { AccessToken } = await import("livekit-server-sdk");
 
-  const identity = userId; // User's ID, or unique identifier
+  const identity = userId;
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
-  const ttl = 10 * 60; // Token expires in 10 minutes
+  const ttl = "10m";
 
-  // Define permissions based on the role
   const canPublish = (await role) === "publisher";
   const canSubscribe = (await role) === "subscriber";
+  console.log(canPublish, canSubscribe);
 
-  // Create the AccessToken
   const token = new AccessToken(apiKey, apiSecret, {
-    identity, // User identity
-    ttl, // Token time-to-live
+    identity,
+    ttl,
   });
 
   // Add grants
   token.addGrant({
-    roomJoin: true, // Allow joining the room
-    room: roomName, // Specify the room name
-    canPublish, // Allow publishing if role is "publisher"
-    canSubscribe, // Allow subscribing
+    room: roomName,
+    roomJoin: true,
+    canPublish: canPublish,
+    canSubscribe: canSubscribe,
   });
 
   // Return the token as JWT
