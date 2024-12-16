@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile.livekit
     ports:
       - "7880:7880"
+      - "50000-60000:50000-60000/udp"
       - "7881:7881"
     volumes:
       - ./config.yaml:/etc/livekit/config.yaml:ro
