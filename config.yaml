@@ -2,17 +2,17 @@ port: 7880
 keys:
   p7LNKEBaHJiOeGmFen5GQXABglf71snm: 6PErE43LHsDxfBwqGM8xZq4JZuTMxQnm
 rtc:
-  port_range_start: 20000
+  port_range_start: 50000
   port_range_end: 60000
   tcp_port: 7881
-  use_external_ip: true
+  external_ip: true
 logging:
   level: debug
 turn:
   enabled: true
   udp_port: 3478
   tls_port: 0
-  relay_range_start: 20000
-  relay_range_end: 60000
+  relay_range_start: 1024
+  relay_range_end: 30000
   external_tls: true
   domain: test.worldsamma.org
