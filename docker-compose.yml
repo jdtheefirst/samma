@@ -7,7 +7,7 @@ services:
       - "7880:7880"
       - "7881:7881"
       - "3478:3478"
-      - "20000-60000:20000-60000/udp"
+      - "20000-60000:20000-60000"
     volumes:
       - ./config.yaml:/etc/livekit/config.yaml:ro
     restart: unless-stopped
