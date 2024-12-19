@@ -17,8 +17,6 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 import LoadingSpinner from "./components/Loading";
 import DelayedRender from "./components/Render";
-const MeetingComponent = lazy(() => import("./pages/Meetings"));
-const Streamer = lazy(() => import("./pages/LivePage"));
 const StreamViewPage = lazy(() => import("./pages/StreamViewing"));
 
 const courses = [
@@ -326,10 +324,6 @@ function App() {
             element={<DelayedRender Component={AdminWorkSlot} />}
           />
           <Route
-            path="/live"
-            element={<DelayedRender Component={Streamer} />}
-          />
-          <Route
             path="/streams"
             element={<DelayedRender Component={StreamViewPage} />}
           />
@@ -343,14 +337,7 @@ function App() {
             path="/championships"
             element={<DelayedRender Component={Championships} />}
           />
-          {/* <Route
-            path="/stream"
-            element={<DelayedRender Component={StreamViewPage} />}
-          /> */}
-          {/* <Route
-            path="/meeting"
-            element={<DelayedRender Component={MeetingComponent} />}
-          /> */}
+
           <Route path="/clubs" element={<DelayedRender Component={Clubs} />} />
           <Route
             path="/courses/:id/submit/:title"

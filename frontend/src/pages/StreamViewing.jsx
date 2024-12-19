@@ -1,31 +1,8 @@
 import { useEffect, useState } from "react";
-import { Box, Heading, Text, Stack, Image, useToast } from "@chakra-ui/react";
+import { Box, Heading, Text, Stack, Image } from "@chakra-ui/react";
 import UpperNav from "../miscellenious/upperNav";
-import { useNavigate } from "react-router-dom";
-import { getLiveKitTokenFromBackend } from "../components/config/chatlogics";
-import { Track } from "livekit-client";
-import { useTracks, LiveKitRoom, VideoTrack } from "@livekit/components-react";
-
-const IncomingStream = () => {
-  const cameraTracks = useTracks([Track.Source.Camera], {
-    onlySubscribed: true,
-  });
-
-  console.log(cameraTracks);
-
-  return (
-    <>
-      {cameraTracks.map((trackReference) => {
-        return <VideoTrack {...trackReference} />;
-      })}
-    </>
-  );
-};
 
 const LiveStream = ({ user }) => {
-  const [token, setToken] = useState("");
-  const navigate = useNavigate();
-  const toast = useToast();
   const [videos, setVideos] = useState([]);
   const [activeVideoId, setActiveVideoId] = useState(null);
   const API_KEY = process.env.REACT_APP_API_KEY;
@@ -48,29 +25,6 @@ const LiveStream = ({ user }) => {
     fetchPlaylistVideos();
   }, []);
 
-  // Initialize LiveKit
-  const initializeLiveKit = async () => {
-    try {
-      const liveKitToken = await getLiveKitTokenFromBackend(
-        "test-room",
-        user?.name,
-        "subscriber",
-        toast,
-        navigate
-      );
-      if (!liveKitToken) throw new Error("Failed to generate LiveKit token");
-      setToken(liveKitToken);
-    } catch (error) {
-      console.error("Error connecting to LiveKit:", error);
-    }
-  };
-
-  // Cleanup LiveKit connection
-  useEffect(() => {
-    initializeLiveKit();
-  }, []);
-
-  // Render logic
   return (
     <Box
       display="flex"
@@ -88,25 +42,9 @@ const LiveStream = ({ user }) => {
 
       <Box width={"100%"} textAlign={"center"} mb={"4"} mt={20}>
         <Heading as="h1" mb={4}>
-          Live Stream
+          Live Streams
         </Heading>
       </Box>
-
-      {token ? (
-        <LiveKitRoom
-          token={token}
-          serverUrl={process.env.REACT_APP_LIVEKIT_URL}
-          connect={true}
-          onConnected={() => console.log("Connected to LiveKit")}
-          onDisconnected={() => console.log("Disconnected from LiveKit")}
-        >
-          <IncomingStream />
-        </LiveKitRoom>
-      ) : (
-        <Text fontSize="lg" color="gray.600" textAlign="center" mt={6}>
-          Generating token and initializing stream...
-        </Text>
-      )}
 
       <Box textAlign={"center"}>
         <Heading as="h2" mb={4}>

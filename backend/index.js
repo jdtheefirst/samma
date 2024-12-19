@@ -12,6 +12,7 @@ const voteRouter = require("./routes/voteRouter");
 const donateRouter = require("./routes/donateRouter");
 const useTranslator = require("./routes/translateRouter");
 const downloadRouter = require("./routes/downloadRouter");
+const schedule = require("./routes/schedule");
 
 const bodyParser = require("body-parser");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
@@ -132,8 +133,8 @@ async function generateLiveKitToken(roomName, userId, role) {
   token.addGrant({
     room: roomName,
     roomJoin: true,
-    canPublish: canPublish,
-    canSubscribe: canSubscribe,
+    canPublish: true,
+    canSubscribe: true,
   });
 
   // Return the token as JWT
@@ -152,6 +153,7 @@ app.use("/api/translate", useTranslator);
 app.use("/api/donate", donateRouter);
 app.use("/api/poll", voteRouter);
 app.use("/api/download", downloadRouter);
+app.use("/api/schedule", schedule);
 
 // // Serve static assets and React frontend in production
 // const __dirname1 = path.resolve();

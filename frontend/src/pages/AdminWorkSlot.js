@@ -25,6 +25,7 @@ import { ChatState } from "../components/Context/ChatProvider";
 import { GrUserAdmin } from "react-icons/gr";
 import { MdLiveTv, MdOutlineMeetingRoom } from "react-icons/md";
 import AnimatedLetters from "../components/wsf";
+import AdminScheduler from "../miscellenious/AdminScheduler";
 
 const AdminWorkSlot = ({ user }) => {
   const [submissions, setSubmissions] = useState([]);
@@ -197,12 +198,6 @@ const AdminWorkSlot = ({ user }) => {
       });
     }
   };
-  const goToLivePage = () => {
-    navigate(`/live`);
-  };
-  const goToMeeting = () => {
-    navigate(`/meeting`);
-  };
 
   return (
     <Box
@@ -242,25 +237,12 @@ const AdminWorkSlot = ({ user }) => {
 
         <Divider mb={"4"} />
 
+        <Text textAlign={"center"} mb={"4"} fontSize={"2xl"}>
+          Stream Date Planner
+        </Text>
+
         <Flex mb={"4"} gap={2}>
-          <Button
-            onClick={goToLivePage}
-            border={"none"}
-            fontSize={"sm"}
-            borderRadius={"full"}
-          >
-            Go Live Now &nbsp; <MdLiveTv color="red" cursor="pointer" />
-          </Button>
-          <Button
-            onClick={goToMeeting}
-            border={"none"}
-            fontSize={"sm"}
-            borderRadius={"full"}
-            isDisabled
-          >
-            Join Meeting &nbsp;{" "}
-            <MdOutlineMeetingRoom color="red" cursor="pointer" />
-          </Button>
+          <AdminScheduler />
         </Flex>
 
         <Divider mb={"4"} />

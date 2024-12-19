@@ -22,7 +22,7 @@ export const UserFormValidation = z.object({
     .string()
     .min(4, "Confirm password must be at least 4 characters long")
     .max(100, "Confirm password must be at most 100 characters")
-    .refine((val, ctx) => val === ctx, {
+    .refine((val, ctx) => val !== ctx, {
       message: "Passwords do not match",
     }),
   passport: z.string().regex(/^\d{8,15}$/, "Invalid passport/ID number"),

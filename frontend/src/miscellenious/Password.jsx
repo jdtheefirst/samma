@@ -23,6 +23,7 @@ export const PasskeyModal = ({ isOpen, onClose }) => {
 
   const validatePasskey = () => {
     if (passkey === process.env.REACT_APP_ADMIN_PASSKEY) {
+      localStorage.setItem("password", passkey);
       navigate("/admin");
       onClose(); // Close the modal after successful validation
     } else {

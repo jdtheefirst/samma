@@ -1,0 +1,98 @@
+// routes/events.js
+const express = require("express");
+const Event = require("../models/eventsModel");
+const router = express.Router();
+
+// Middleware to check for overlapping events
+const checkForOverlap = async (req, res, next) => {
+  const { startTime, endTime, id } = req.body;
+
+  try {
+    const overlappingEvent = await Event.findOne({
+      _id: { $ne: id }, // Exclude the current event in edit mode
+      $or: [
+        { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
+        { startTime: { $gte: startTime, $lt: endTime } },
+        { endTime: { $gt: startTime, $lte: endTime } },
+      ],
+    });
+
+    if (overlappingEvent) {
+      return res.status(400).json({
+        error: "This event overlaps with another existing event.",
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error checking for overlapping events:", error);
+    res.status(500).json({ error: "Server error while checking overlaps." });
+  }
+};
+
+// Fetch all events
+router.get("/", async (req, res) => {
+  try {
+    const events = await Event.find();
+    res.json(events);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ error: "Failed to fetch events." });
+  }
+});
+
+// Create a new event
+router.post("/", checkForOverlap, async (req, res) => {
+  const {
+    roomName,
+    description,
+    location,
+    participants,
+    startTime,
+    endTime,
+    isAllDay,
+    recurrenceRule,
+  } = req.body;
+
+  try {
+    const event = new Event({
+      roomName,
+      description,
+      location,
+      participants,
+      startTime,
+      endTime,
+      isAllDay,
+      recurrenceRule,
+    });
+
+    const savedEvent = await event.save();
+    res.status(201).json(savedEvent);
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ error: "Failed to create event." });
+  }
+});
+
+// Delete an event
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(403).json({ error: "No resource found." });
+  }
+
+  try {
+    const deletedEvent = await Event.findByIdAndDelete(id);
+
+    if (!deletedEvent) {
+      return res.status(404).json({ error: "Event not found." });
+    }
+
+    res.json({ message: "Event deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ error: "Failed to delete event." });
+  }
+});
+
+module.exports = router;
