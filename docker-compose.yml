@@ -14,8 +14,8 @@ services:
       dockerfile: Dockerfile.backend
     ports:
       - "8080:8080"
-    depends_on:
-      - livekit
+    # depends_on:
+    #   - livekit
     command: node backend/index.js
 
   nginx:
@@ -27,6 +27,6 @@ services:
       - "443:443"
     depends_on:
       - backend
-      - livekit
+      # - livekit
     volumes:
       - ./frontend/build:/usr/share/nginx/html:ro
