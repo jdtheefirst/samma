@@ -156,27 +156,6 @@ const AdminScheduler = () => {
     }
   };
 
-  // Handle slot selection for creating a new event
-  const handleSelectSlot = ({ start, end }) => {
-    setFormState({
-      title: "",
-      description: "",
-      location: "",
-      participants: "",
-      start,
-      end,
-      isAllDay: false,
-      recurrenceRule: "",
-    });
-    onOpen();
-  };
-
-  // Handle event selection (edit mode)
-  const handleSelectEvent = (event) => {
-    setFormState({ ...event });
-    onOpen();
-  };
-
   const isDeleteMode = !!formState.id;
 
   return (
@@ -192,8 +171,10 @@ const AdminScheduler = () => {
         startAccessor="start"
         endAccessor="end"
         selectable
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={handleSelectEvent}
+        onSelectEvent={(event) => {
+          setFormState({ ...event });
+          onOpen();
+        }}
         style={{
           height: "25rem",
         }}
