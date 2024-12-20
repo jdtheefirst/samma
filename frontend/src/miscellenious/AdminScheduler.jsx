@@ -197,9 +197,6 @@ const AdminScheduler = () => {
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           height: "25rem",
         }}
         tooltipAccessor={(event) =>
