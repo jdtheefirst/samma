@@ -1,9 +1,7 @@
-import React from "react";
 import "./index.css";
 import "./setup";
 import "react-app-polyfill/ie11";
 import "react-app-polyfill/stable";
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import "core-js";
 import reportWebVitals from "./reportWebVitals";
 import { ChakraProvider } from "@chakra-ui/react";

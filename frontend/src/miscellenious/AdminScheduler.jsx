@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+
 import {
   Box,
   Button,
@@ -185,8 +185,6 @@ const AdminScheduler = () => {
       justifyContent={"center"}
       alignItems={"center"}
       width={"100%"}
-      height={"100%"}
-      style={{ overflow: "hidden", position: "relative" }}
     >
       <Calendar
         localizer={localizer}
