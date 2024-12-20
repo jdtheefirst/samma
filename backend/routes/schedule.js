@@ -1,6 +1,7 @@
 // routes/events.js
 const express = require("express");
 const Event = require("../models/eventsModel");
+const { limiter } = require("../middleware/limiter");
 const router = express.Router();
 
 // Middleware to check for overlapping events
@@ -31,7 +32,7 @@ const checkForOverlap = async (req, res, next) => {
 };
 
 // Fetch all events
-router.get("/", async (req, res) => {
+router.get("/events", async (req, res) => {
   try {
     const events = await Event.find();
     res.json(events);
@@ -92,6 +93,31 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting event:", error);
     res.status(500).json({ error: "Failed to delete event." });
+  }
+});
+
+router.get("/room", limiter, async (req, res) => {
+  const { room } = req.query;
+
+  if (!room) {
+    return res.status(400).json({ error: "Room name is required." });
+  }
+
+  try {
+    const roomDetails = await Event.findOne({ roomName: room });
+
+    if (!roomDetails) {
+      return res
+        .status(404)
+        .json({ error: `Room with name "${room}" does not exist.` });
+    }
+
+    res.status(200).json(roomDetails);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching room data." });
   }
 });
 

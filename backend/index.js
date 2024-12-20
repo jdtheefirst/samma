@@ -18,6 +18,33 @@ const bodyParser = require("body-parser");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { initializeSocketIO } = require("./socket");
 const { limiter } = require("./middleware/limiter");
+const cors = require("cors");
+
+// Define allowed origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://worldsamma.org",
+  "https://live.worldsamma.org",
+  "https://test.worldsamma.org",
+];
+
+// Configure CORS options
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
 dotenv.config({ path: "./secrets.env" });
 connectDB();
@@ -28,6 +55,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("trust proxy", 1);
+app.use(cors(corsOptions));
 
 // Initialize Socket.IO
 const server = app.listen(PORT, () => {

@@ -1,12 +1,12 @@
 services:
-  livekit:
-    build:
-      context: .
-      dockerfile: Dockerfile.livekit
-    network_mode: "host"
-    volumes:
-      - ./config.yaml:/etc/livekit/config.yaml:ro
-    restart: unless-stopped
+  # livekit:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.livekit
+  #   network_mode: "host"
+  #   volumes:
+  #     - ./config.yaml:/etc/livekit/config.yaml:ro
+  #   restart: unless-stopped
 
   backend:
     build:

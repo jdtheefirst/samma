@@ -44,7 +44,7 @@ const AdminScheduler = () => {
   // Fetch events from the backend
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/schedule");
+      const response = await fetch("/api/schedule/events");
       const data = await response.json();
       setEvents(
         data.map((event) => ({
