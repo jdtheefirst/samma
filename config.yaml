@@ -15,4 +15,4 @@ turn:
   key_file: /etc/livekit/privkey.pem
   relay_range_start: 1024
   relay_range_end: 30000
-  domain: test.worldsamma.org
+  domain: worldsamma.org
