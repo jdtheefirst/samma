@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../components/config/axios";
 import { ChatState } from "../components/Context/ChatProvider";
 import { GrUserAdmin } from "react-icons/gr";
-import { MdLiveTv, MdOutlineMeetingRoom } from "react-icons/md";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import AnimatedLetters from "../components/wsf";
 import AdminScheduler from "../miscellenious/AdminScheduler";
 

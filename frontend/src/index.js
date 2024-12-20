@@ -1,16 +1,17 @@
-import React, {} from 'react';
+import React from "react";
 import "./index.css";
 import "./setup";
-import 'react-app-polyfill/ie11';
-import 'react-app-polyfill/stable';
-import 'core-js';
+import "react-app-polyfill/ie11";
+import "react-app-polyfill/stable";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import "core-js";
 import reportWebVitals from "./reportWebVitals";
 import { ChakraProvider } from "@chakra-ui/react";
 import ChatProvider from "./components/Context/ChatProvider";
 import { BrowserRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
-import App from './App';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import App from "./App";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const domNode = document.getElementById("root");
 const root = createRoot(domNode);
@@ -18,8 +19,8 @@ root.render(
   <ChakraProvider>
     <BrowserRouter>
       <ChatProvider>
-        <GoogleOAuthProvider clientId='940835071660-da44he72t3otp7cbn96vlg5pb753tv73.apps.googleusercontent.com'>
-          <App/>
+        <GoogleOAuthProvider clientId="940835071660-da44he72t3otp7cbn96vlg5pb753tv73.apps.googleusercontent.com">
+          <App />
         </GoogleOAuthProvider>
       </ChatProvider>
     </BrowserRouter>
