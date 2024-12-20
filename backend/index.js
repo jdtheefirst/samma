@@ -21,6 +21,7 @@ const cors = require("cors");
 
 // Define allowed origins
 const allowedOrigins = [
+  // "http://localhost:3000",
   "https://worldsamma.org",
   "https://live.worldsamma.org",
 ];

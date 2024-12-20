@@ -240,11 +240,7 @@ const AdminWorkSlot = ({ user }) => {
         <Text textAlign={"center"} mb={"4"} fontSize={"2xl"}>
           Stream Date Planner
         </Text>
-
-        <Flex mb={"4"} gap={2}>
-          <AdminScheduler />
-        </Flex>
-
+        <AdminScheduler />
         <Divider mb={"4"} />
         <Text
           textAlign={"center"}

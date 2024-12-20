@@ -180,7 +180,14 @@ const AdminScheduler = () => {
   const isDeleteMode = !!formState.id;
 
   return (
-    <Box>
+    <Box
+      display={"flex"}
+      justifyContent={"center"}
+      alignItems={"center"}
+      width={"100%"}
+      height={"100%"}
+      style={{ overflow: "hidden", position: "relative" }}
+    >
       <Calendar
         localizer={localizer}
         events={events}
@@ -189,7 +196,12 @@ const AdminScheduler = () => {
         selectable
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
-        style={{ height: "550px" }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "25rem",
+        }}
         tooltipAccessor={(event) =>
           `${event.title}\n${event.description}\nLocation: ${event.location}\nParticipants: ${event.participants}`
         }

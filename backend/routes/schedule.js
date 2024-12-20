@@ -99,8 +99,6 @@ router.delete("/:id", async (req, res) => {
 router.get("/room", limiter, async (req, res) => {
   const { room } = req.query;
 
-  console.log("We were here! Room:", room);
-
   if (!room) {
     return res.status(400).json({ error: "Room name is required." });
   }
