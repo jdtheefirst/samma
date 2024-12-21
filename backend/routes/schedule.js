@@ -112,6 +112,16 @@ router.get("/room", limiter, async (req, res) => {
         .json({ error: `Room with name "${room}" does not exist.` });
     }
 
+    // Get current time
+    const now = new Date();
+
+    // Check if the current time is between the event's start and end time
+    if (now >= roomDetails.startTime && now <= roomDetails.endTime) {
+      roomDetails.isLive = true; // Mark the room as live if the time is within range
+    } else {
+      roomDetails.isLive = false; // Mark the room as not live if the time is out of range
+    }
+
     res.status(200).json(roomDetails);
   } catch (error) {
     console.error(error);

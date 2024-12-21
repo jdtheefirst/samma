@@ -124,6 +124,17 @@ const AdminScheduler = () => {
 
   // Delete event from the backend
   const deleteEvent = async (eventId) => {
+    if (!eventId) {
+      toast({
+        title: "Error",
+        description: "No event ID found.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(`/api/schedule/${eventId}`, {
@@ -157,8 +168,6 @@ const AdminScheduler = () => {
     }
   };
 
-  const isDeleteMode = !!formState.id;
-
   return (
     <Box
       display={"flex"}
@@ -174,6 +183,7 @@ const AdminScheduler = () => {
         selectable
         onSelectEvent={(event) => {
           setFormState({
+            id: event.id || "",
             title: event.title || "",
             description: event.description || "",
             location: event.location || "",
@@ -211,7 +221,7 @@ const AdminScheduler = () => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {isDeleteMode ? "Delete Event" : "Create Event"}
+            {formState.id ? "Share Event" : "Create Event"}
           </ModalHeader>
 
           <ModalCloseButton />
@@ -220,7 +230,7 @@ const AdminScheduler = () => {
               Start: {moment(formState.start).format("YYYY-MM-DD HH:mm")} &nbsp;
               End: {moment(formState.end).format("YYYY-MM-DD HH:mm")}
             </Text>
-            {isDeleteMode && <ShareableLinks roomName={formState.title} />}
+            {formState.id && <ShareableLinks roomName={formState.title} />}
             <FormControl mt={"2"}>
               <FormLabel>Room Name</FormLabel>
               <Input
@@ -285,7 +295,7 @@ const AdminScheduler = () => {
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            {isDeleteMode ? (
+            {formState.id ? (
               <Button
                 onClick={() => deleteEvent(formState.id)}
                 isLoading={loading}
