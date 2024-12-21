@@ -153,10 +153,11 @@ const AdminScheduler = () => {
         isClosable: true,
       });
       fetchEvents();
-      onclose();
+      onClose();
       setLoading(false);
     } catch (error) {
       console.error(error);
+      onClose();
       setLoading(false);
       toast({
         title: "Error",
