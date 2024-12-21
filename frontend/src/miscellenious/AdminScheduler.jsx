@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
 import {
   Box,
@@ -172,7 +173,29 @@ const AdminScheduler = () => {
         endAccessor="end"
         selectable
         onSelectEvent={(event) => {
-          setFormState({ ...event });
+          setFormState({
+            title: event.title || "",
+            description: event.description || "",
+            location: event.location || "",
+            participants: event.participants || "",
+            start: event.start,
+            end: event.end,
+            isAllDay: event.isAllDay || false,
+            recurrenceRule: event.recurrenceRule || "",
+          });
+          onOpen();
+        }}
+        onSelectSlot={(slotInfo) => {
+          setFormState({
+            title: "",
+            description: "",
+            location: "",
+            participants: "",
+            start: slotInfo.start,
+            end: slotInfo.end,
+            isAllDay: slotInfo.action === "doubleClick",
+            recurrenceRule: "",
+          });
           onOpen();
         }}
         style={{
