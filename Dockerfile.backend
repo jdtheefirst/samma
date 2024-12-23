@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:20-alpine
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -6,15 +6,12 @@ WORKDIR /usr/src/app
 # Copy only the backend-specific package.json files from the backend folder
 COPY package*.json ./
 
-# Install backend dependencies
-RUN npm install
+# Install backend dependencies (no need for global npm install if not required)
+RUN npm install --no-optional --production
 
 # Set environment variables
 ENV NPM_CONFIG_TIMEOUT=600000
-ENV NODE_OPTIONS=--max-old-space-size=4096
-
-# Install a stable version of npm (e.g., 9.x.x)
-RUN npm install -g npm@9.8.1 --cache /tmp/empty-cache --prefer-offline
+ENV NODE_OPTIONS=--max-old-space-size=256
 
 # Copy the entire source directory
 COPY . .
