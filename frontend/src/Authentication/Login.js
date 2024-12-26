@@ -102,32 +102,34 @@ const Login = () => {
         navigate("/accountrecovery");
         setVerify(data.verificationCode);
         setRecoverEmail(data.email);
-      } else {
-        toast({
-          title: "Email not found",
-          status: "info",
-          duration: 5000,
-          position: "bottom",
-        });
       }
-
-      setSearching(false);
-      setTimeout(() => {
-        setDisable(false);
-      }, 30000);
     } catch (error) {
       setSearching(false);
       setTimeout(() => {
         setDisable(false);
       }, 30000);
-      toast({
-        title: "Error Occurred!",
-        description: error.response.data.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom",
-      });
+
+      if (
+        error.response &&
+        error.response.status === 404 &&
+        error.response.data === false
+      ) {
+        toast({
+          title: "Email not found",
+          status: "warning",
+          duration: 5000,
+          position: "bottom",
+        });
+      } else {
+        toast({
+          title: "Error Occurred!",
+          description: error.response?.data?.message || "Something went wrong.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom",
+        });
+      }
     }
   };
 

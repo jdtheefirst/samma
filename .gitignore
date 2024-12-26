@@ -1,5 +1,6 @@
 frontend/node_modules
 node_modules
 frontend/build
+frontend/build.zip
 # /secrets.env
 # secrets.env

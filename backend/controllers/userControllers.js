@@ -186,9 +186,7 @@ const forgotEmail = async (req, res) => {
       });
     } else {
       // Email not found
-      return res
-        .status(404)
-        .json({ message: "Email not found in the database" });
+      return res.status(404).json(false);
     }
   } catch (error) {
     console.error("Error in forgotEmail function:", error);
