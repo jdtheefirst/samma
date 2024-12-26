@@ -117,20 +117,17 @@ router.get("/room", limiter, async (req, res) => {
     const endTime = new Date(roomDetails.endTime);
     const now = new Date();
 
-    console.log("Current Time:", now);
-    console.log("Start Time:", startTime);
-    console.log("End Time:", endTime);
+    // Determine if the event is live
+    const isLive = now >= startTime && now <= endTime;
 
-    // Check if the current time is within the event's duration
-    if (now >= startTime && now <= endTime) {
-      console.log("Returning true...");
-      roomDetails.isLive = true;
-    } else {
-      roomDetails.isLive = false;
-      console.log("Returning false...");
-    }
+    // Build the response object
+    const response = {
+      ...roomDetails.toObject(), // Convert MongoDB document to plain object
+      isLive, // Add isLive property
+    };
 
-    res.status(200).json(roomDetails);
+    // Send the response
+    res.status(200).json(response);
   } catch (error) {
     console.error(error);
     res
