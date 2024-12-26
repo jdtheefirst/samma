@@ -68,9 +68,9 @@ const registerUsers = asyncHandler(async (req, res) => {
       passport,
       WSF,
     };
-  
+
     const userInfo = await User.create(user);
-  
+
     if (userInfo) {
       const responseData = {
         _id: userInfo._id,
@@ -91,16 +91,17 @@ const registerUsers = asyncHandler(async (req, res) => {
         language: userInfo.language,
         token: generateToken(userInfo._id),
       };
-  
+
       res.status(201).json(responseData);
     } else {
       res.status(400);
-      throw new Error("Failed to create the account, try again after some time.");
+      throw new Error(
+        "Failed to create the account, try again after some time."
+      );
     }
   } catch (error) {
     console.log(error);
     res.status(500);
-    
   }
 });
 
@@ -129,64 +130,69 @@ const allUsers = asyncHandler(async (req, res) => {
 
 const forgotEmail = async (req, res) => {
   const { email } = req.params;
-  let userInfo = await User.findOne({ email });
-  let admissionInfo = await Admission.findOne({ email });
 
-  userInfo = userInfo || admissionInfo;
-  if (userInfo) {
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
+  try {
+    // Search for user or admission info
+    let userInfo = await User.findOne({ email });
+    if (!userInfo) {
+      userInfo = await Admission.findOne({ email });
+    }
 
-    let transporter = nodemailer.createTransport({
-      host: "mail.privateemail.com",
-      port: 465, // or 587 if using STARTTLS
-      secure: true, // if using SSL/TLS
-      auth: {
-        user: privateEmail, // your email address
-        pass: privateEmailPass, // your email password
-      },
-    });
-    const companyLogoUrl = 'https://res.cloudinary.com/dsdlgmgwi/image/upload/v1720864475/icon.jpg';
+    if (userInfo) {
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
 
-    const mailOptions = {
-      from: `World Samma Federation <${privateEmail}>`,
-      to: email,
-      subject: "Recover Your Email",
-      html: `
-        <div style="background-color: #f2f2f2; padding: 20px; font-family: Arial, sans-serif;">
-          <h2 style="color: #333;">Recover Your Email</h2>
-          <img src="${companyLogoUrl}" loading="eager" alt="Company Logo" style="width: 100px; margin-bottom: 20px;">
-          <p>Hello,</p>
-          <p>You have requested to recover your email associated with our service.</p>
-          <p>Your recovery code is: <strong>${verificationCode}</strong></p>
-          <p>If you did not request this change, please contact support immediately.</p>
-          <p>Stay connected and follow us on social media:</p>
-          <ul style="list-style: none; padding: 0;">
-            <li style="margin-bottom: 10px;"><a href="https://www.tiktok.com/@worldsamma" target="_blank" style="color: #007bff; text-decoration: none;">Tiktok</a></li>
-            <li style="margin-bottom: 10px;"><a href="https://x.com/worldsamma" target="_blank" style="color: #007bff; text-decoration: none;">X</a></li>
-            <li style="margin-bottom: 10px;"><a href="https://facebook.com/worldsamma" target="_blank" style="color: #007bff; text-decoration: none;">Facebook</a></li>
-            <li style="margin-bottom: 10px;"><a href="https://instagram.com/worldsamma" target="_blank" style="color: #007bff; text-decoration: none;">Instagram</a></li>
-            <li style="margin-bottom: 10px;"><a href="https://www.youtube.com/@worldsamma" target="_blank" style="color: #007bff; text-decoration: none;">Youtube</a></li>
-          </ul>
-          <p>Remember, every great journey begins with a single step. Embrace the challenges and keep pushing forward!</p>
-          <p>Thank you for being a part of our community.</p> 
-        </div>
-      `,
-    };
+      // Configure transporter
+      let transporter = nodemailer.createTransport({
+        host: "mail.privateemail.com",
+        port: 465, // or 587 if using STARTTLS
+        secure: true, // SSL/TLS
+        auth: {
+          user: privateEmail,
+          pass: privateEmailPass,
+        },
+      });
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        res.status(400).json({ message: "Email Sending Failed" });
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-        res.status(200).json({ verificationCode, email });
-      }
-    });
-  } else {
-    res.json(false);
-    throw new Error({ message: "Email not Found in the database" });
+      const companyLogoUrl =
+        "https://res.cloudinary.com/dsdlgmgwi/image/upload/v1720864475/icon.jpg";
+
+      // Mail options
+      const mailOptions = {
+        from: `World Samma Federation <${privateEmail}>`,
+        to: email,
+        subject: "Recover Your Email",
+        html: `
+          <div style="background-color: #f2f2f2; padding: 20px; font-family: Arial, sans-serif;">
+            <h2 style="color: #333;">Recover Your Email</h2>
+            <img src="${companyLogoUrl}" loading="eager" alt="Company Logo" style="width: 100px; margin-bottom: 20px;">
+            <p>Hello,</p>
+            <p>You have requested to recover your email associated with our service.</p>
+            <p>Your recovery code is: <strong>${verificationCode}</strong></p>
+            <p>If you did not request this change, please contact support immediately.</p>
+          </div>
+        `,
+      };
+
+      // Send mail
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Email Sending Failed:", error);
+          return res.status(400).json({ message: "Email Sending Failed" });
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({ verificationCode, email });
+        }
+      });
+    } else {
+      // Email not found
+      return res
+        .status(404)
+        .json({ message: "Email not found in the database" });
+    }
+  } catch (error) {
+    console.error("Error in forgotEmail function:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -445,7 +451,8 @@ const authorizeUser = async (req, res) => {
       pass: privateEmailPass,
     },
   });
-  const companyLogoUrl = 'https://res.cloudinary.com/dsdlgmgwi/image/upload/v1720864475/icon.jpg';
+  const companyLogoUrl =
+    "https://res.cloudinary.com/dsdlgmgwi/image/upload/v1720864475/icon.jpg";
 
   const mailOptions = {
     from: `World Samma Federation <${privateEmail}>`,
