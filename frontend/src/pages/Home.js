@@ -15,19 +15,18 @@ import {
   LinkBox,
   Spinner,
   VStack,
+  useDisclosure,
 } from "@chakra-ui/react";
 import ErrorBoundary from "../components/ErrorBoundary";
 import "../App.css";
 import Logins from "./Logins";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo8 from "../assets/images/stance_wsf.jpg";
 import logo9 from "../assets/images/sammahouse.jpeg";
 import logo10 from "../assets/images/Equity.png";
 import {
   FaArrowCircleRight,
   FaArrowAltCircleDown,
-  FaRocket,
   FaTiktok,
 } from "react-icons/fa";
 import { FcDonate } from "react-icons/fc";
@@ -44,7 +43,7 @@ import {
 } from "react-icons/ci";
 import TestimonialsCarousel from "../components/Carousel";
 import PollComponent from "../components/Polls";
-import { MdMenuOpen } from "react-icons/md";
+import { MdMenu, MdMenuOpen } from "react-icons/md";
 import axios from "axios";
 import { ChatState } from "../components/Context/ChatProvider";
 import CoursesGrid from "../components/Courses";
@@ -56,6 +55,7 @@ function Homepage() {
   const navigate = useNavigate();
   const [count, setCount] = useState(Number);
   const [loading, setLoading] = useState(false);
+  const { onOpen, onClose, isOpen } = useDisclosure();
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -140,13 +140,19 @@ function Homepage() {
             {"\u00A0"} All-In-One Martial Art
           </Text>
 
-          <Menu>
+          <Menu isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
             <MenuButton
               as={IconButton}
               border="none"
-              icon={<MdMenuOpen style={{ color: "white", fontSize: "30px" }} />}
+              icon={
+                isOpen ? (
+                  <MdMenu fontSize={"3rem"} color="white" />
+                ) : (
+                  <MdMenuOpen fontSize={"3rem"} color="white" />
+                )
+              }
               variant="outline"
-              colorScheme="#2d1950"
+              colorScheme="rgb(242, 239, 247)"
             />
             <MenuList borderRadius={"none"}>
               <MenuItem
@@ -221,6 +227,7 @@ function Homepage() {
             letterSpacing={1}
             textShadow={{ base: "1px 1px 1px #000", md: "2px 2px 2px #000" }}
             width={"100%"}
+            mt={"2rem"}
           >
             WORLD SAMMA FEDERATION
           </Text>
@@ -289,7 +296,7 @@ function Homepage() {
               position={"relative"}
             >
               <Image
-                src={logo8}
+                src={"/images/wsf-logo.png"}
                 position={"absolute"}
                 zIndex={-1}
                 alt={`Logo 2*`}
@@ -297,8 +304,6 @@ function Homepage() {
                 opacity={0.5}
                 loading="lazy"
                 rounded="md"
-                bg="blackAlpha.400"
-                borderRadius={"full"}
                 top={{ base: "1%", md: "0" }}
               />
               <Text
@@ -689,9 +694,9 @@ function Homepage() {
               {/* World Samma Federation - The Global Organization */}
               <VStack spacing={2} textAlign="center" maxW="300px">
                 <Image
-                  src="/images/finalLogo2.jpeg"
+                  src="/images/wsf-transparent.png"
                   alt="Shilikisho la Samma Duniani"
-                  boxSize={{ base: "250px", md: "270px" }}
+                  boxSize={{ base: "200px", md: "250px" }}
                   objectFit="contain"
                 />
                 <Text fontWeight="bold" fontSize="lg">
@@ -705,7 +710,7 @@ function Homepage() {
               {/* World Samma Academy - Main HQ & Online Training */}
               <VStack spacing={2} textAlign="center" maxW="300px">
                 <Image
-                  src="/images/final.jpeg"
+                  src="/images/wsa-transparent.png"
                   alt="World Samma Academy"
                   boxSize={{ base: "150px", md: "200px" }}
                   objectFit="contain"
