@@ -86,12 +86,11 @@ const AboutPage = () => {
                 >
                   15th March 2011 (in Mombasa City Centre):
                 </strong>
-                {"\u00A0"}
-                Formation of the Society of African Mixed Martial Arts and use
-                of SAMMA as its acronym (acronym inspired by east African street
-                slang word for a flip, "sama"). Then making of cheni 6
-                curriculum began with "designing" of the tamati (sign out)
-                pattern.
+                &nbsp; Formation of the Society of African Mixed Martial Arts
+                and use of SAMMA as its acronym (acronym inspired by east
+                African street slang word for a flip, "sama"). Then making of
+                cheni 6 curriculum began with "designing" of the tamati (sign
+                out) pattern.
               </Text>
               <Text fontFamily="Arial, sans-serif" mb={4}>
                 <strong
@@ -103,11 +102,10 @@ const AboutPage = () => {
                 >
                   1st August 2013 (in Mombasa North Coast):
                 </strong>
-                {"\u00A0"}
-                Transformation of SAMMA to a martial art after the completion of
-                the main contents of cheni 6 curriculum. Immediate formation of
-                the World Samma Federation (WSF) to unify and voice for wasamma
-                (samma exponents) worldwide.
+                &nbsp; Transformation of SAMMA to a martial art after the
+                completion of the main contents of cheni 6 curriculum. Immediate
+                formation of the World Samma Federation (WSF) to unify and voice
+                for wasamma (samma exponents) worldwide.
               </Text>
               <Text fontFamily="Arial, sans-serif" mb={4}>
                 <strong
@@ -119,13 +117,12 @@ const AboutPage = () => {
                 >
                   March 2021:
                 </strong>
-                {"\u00A0"}
-                Introduction of samma pigano (sparring) method at Kenya Coast,
-                that is; THREE ranges of man to man combat (stick, elbow, punch,
-                knee, kick and finally grappling).
+                &nbsp; Introduction of samma pigano (sparring) method at Kenya
+                Coast, that is; THREE ranges of man to man combat (stick, elbow,
+                punch, knee, kick and finally grappling).
               </Text>
               <a
-                href="https://res.cloudinary.com/dsdlgmgwi/image/upload/v1734855416/sammaV5.pdf"
+                href="https://res.cloudinary.com/dsdlgmgwi/image/upload/v1740820684/sammaV6.pdf"
                 download
                 style={{ textDecoration: "none", color: "blue" }} // Adjust color as needed
               >

@@ -14,15 +14,14 @@ import {
   LinkOverlay,
   LinkBox,
   Spinner,
+  VStack,
 } from "@chakra-ui/react";
 import ErrorBoundary from "../components/ErrorBoundary";
 import "../App.css";
 import Logins from "./Logins";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo1 from "../assets/images/final_sauna.jpg";
-import logo3 from "../assets/images/finalLogo5.jpg";
-import logo7 from "../assets/images/reduced.jpg";
+import logo8 from "../assets/images/stance_wsf.jpg";
 import logo9 from "../assets/images/sammahouse.jpeg";
 import logo10 from "../assets/images/Equity.png";
 import {
@@ -199,20 +198,18 @@ function Homepage() {
           display="flex"
           justifyContent={"space-between"}
           alignItems={"center"}
-          mt={70}
+          mt={{
+            base: "4rem",
+            md: "5rem",
+            lg: "6rem",
+            xl: "7rem",
+          }}
           width={"100%"}
         >
-          <Image
-            src={logo1}
-            boxSize={{ base: "60px", md: "120px" }}
-            width={{ base: "65px", md: "130px" }}
-            loading="lazy"
-            alt={`Logo 1*`}
-          />
           <Text
             textAlign={"center"}
             fontSize={{
-              base: "xl",
+              base: "3xl",
               md: "30px",
               lg: "40px",
               xl: "50px",
@@ -220,24 +217,13 @@ function Homepage() {
             textColor={"yellow.400"}
             fontWeight="extrabold"
             borderRadius={3}
-            position="absolute"
-            bottom={{ base: -14, md: 0 }}
-            left="50%"
-            width={{ base: "60%", lg: "100%" }}
-            transform="translateX(-50%)"
             p={"2"}
             letterSpacing={1}
             textShadow={{ base: "1px 1px 1px #000", md: "2px 2px 2px #000" }}
+            width={"100%"}
           >
             WORLD SAMMA FEDERATION
           </Text>
-          <Image
-            src={logo3}
-            boxSize={{ base: "60px", md: "120px" }}
-            width={{ base: "70px", md: "140px" }}
-            alt={`Logo 2*`}
-            loading="lazy"
-          />
         </Box>
         {show && <CoffeeModal isOpen={true} onClose={handleCloseModal} />}
         {getStarted ? (
@@ -247,7 +233,7 @@ function Homepage() {
             justifyContent={"center"}
             alignItems={"center"}
             flexDirection="column"
-            mt={{ base: "60px", md: "20px" }}
+            mt={{ base: "0.5", md: "1.5" }}
           >
             <Logins />
             <Box
@@ -303,7 +289,7 @@ function Homepage() {
               position={"relative"}
             >
               <Image
-                src={logo7}
+                src={logo8}
                 position={"absolute"}
                 zIndex={-1}
                 alt={`Logo 2*`}
@@ -323,7 +309,7 @@ function Homepage() {
                 boxShadow="base"
                 textColor={"#000000"}
                 rounded="md"
-                mt={{ base: "60px", md: "20px" }}
+                mt={{ base: "1rem", md: "20px" }}
               >
                 ⭐ Sign up as a GUEST for free at the WSF Online School to
                 follow your favorite clubs and enjoy splendid presentations,
@@ -410,7 +396,7 @@ function Homepage() {
                     display={"flex"}
                     justifyContent={"center"}
                     alignItems={"center"}
-                    href="https://res.cloudinary.com/dsdlgmgwi/image/upload/v1734855416/sammaV5.pdf"
+                    href="https://res.cloudinary.com/dsdlgmgwi/image/upload/v1740820684/sammaV6.pdf"
                     target="_blank"
                     download
                     fontSize={{ base: "md", md: "xl" }}
@@ -691,6 +677,49 @@ function Homepage() {
               >
                 Get Started
               </Button>
+            </Box>
+            <Box
+              display="flex"
+              flexDir={{ base: "column", md: "row" }}
+              alignItems="center"
+              justifyContent="center"
+              gap={6}
+              p={6}
+            >
+              {/* World Samma Federation - The Global Organization */}
+              <VStack spacing={2} textAlign="center" maxW="300px">
+                <Image
+                  src="/images/finalLogo2.jpeg"
+                  alt="Shilikisho la Samma Duniani"
+                  boxSize={{ base: "250px", md: "270px" }}
+                  objectFit="contain"
+                />
+                <Text fontWeight="bold" fontSize="lg">
+                  Shilikisho la Samma Duniani
+                </Text>
+                <Text fontSize="sm" color="gray.600">
+                  The governing body uniting Samma practitioners worldwide.
+                </Text>
+              </VStack>
+
+              {/* World Samma Academy - Main HQ & Online Training */}
+              <VStack spacing={2} textAlign="center" maxW="300px">
+                <Image
+                  src="/images/final.jpeg"
+                  alt="World Samma Academy"
+                  boxSize={{ base: "150px", md: "200px" }}
+                  objectFit="contain"
+                />
+                <Text fontWeight="bold" fontSize="lg">
+                  World Samma Academy
+                </Text>
+                <Text fontSize="sm" color="gray.600">
+                  The official headquarters and main training camp of WSF.
+                </Text>
+                <Text fontSize="sm" color="blue.500" fontWeight="medium">
+                  Offers online courses right here on this website.
+                </Text>
+              </VStack>
             </Box>
             <Box
               display={"flex"}

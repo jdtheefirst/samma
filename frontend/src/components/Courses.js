@@ -6,7 +6,7 @@ import {
   useColorModeValue,
   Button,
 } from "@chakra-ui/react";
-import AdvancedTraining from "../assets/images/Advanced.jpg";
+import AdvancedTraining from "../assets/images/AdvanceTraining.jpg";
 import Certified from "../assets/images/Uniform_Blue.jpg";
 
 const courses = [

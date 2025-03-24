@@ -30,3 +30,4 @@ services:
       # - livekit
     volumes:
       - ./frontend/build:/usr/share/nginx/html:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro

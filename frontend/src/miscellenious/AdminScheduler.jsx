@@ -231,7 +231,7 @@ const AdminScheduler = () => {
               Start: {moment(formState.start).format("YYYY-MM-DD HH:mm")} &nbsp;
               End: {moment(formState.end).format("YYYY-MM-DD HH:mm")}
             </Text>
-            {formState.id && <ShareableLinks roomName={formState.title} />}
+            {formState.id && <ShareableLinks event={formState} />}
             <FormControl mt={"2"}>
               <FormLabel>Room Name</FormLabel>
               <Input

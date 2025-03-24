@@ -22,7 +22,6 @@ import { Avatar } from "@chakra-ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { ChatState } from "../components/Context/ChatProvider";
 import Requests from "./Requests";
-import logo7 from "../assets/images/final.jpeg";
 import { PiSignOutLight } from "react-icons/pi";
 import { PasskeyModal } from "./Password";
 import { useState } from "react";
@@ -63,7 +62,7 @@ function UpperNav() {
         top={0}
         position={"fixed"}
       >
-        <Image src={logo7} height={12} />
+        <Image src="/images/final.jpeg" height={12} />
         <Box display={"flex"} justifyContent={"center"} alignItems={"center"}>
           <Button
             backgroundColor={"transparent"}
