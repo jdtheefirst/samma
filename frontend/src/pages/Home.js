@@ -682,6 +682,17 @@ function Homepage() {
               >
                 Get Started
               </Button>
+              <Button
+                borderRadius={20}
+                onClick={() => {
+                  setShow(false);
+                  setGetStarted(false);
+                }}
+                m={{ base: "2" }}
+                color={"white"}
+              >
+                Donate
+              </Button>
             </Box>
             <Box
               display="flex"
