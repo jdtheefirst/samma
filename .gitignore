@@ -2,5 +2,20 @@ frontend/node_modules
 node_modules
 frontend/build
 frontend/build.zip
-# /secrets.env
-# secrets.env
+frontend/.env
+.env
+/secrets.env
+secrets.env
+/.env.local
+.env.local
+/.env.development.local
+.env.test.local
+/.env.production.local
+.env.development
+.env.production
+/.env.test
+.env.test
+/.env.development.local
+.env.production.local
+/.env.development
+
