@@ -173,5 +173,3 @@ Hosted on DigitalOcean droplet (`137.184.233.104`)
 - [ ] Integrate donation/payment processing
 - [ ] Expand media streaming capabilities
 - [ ] Internationalization support
-
-```
